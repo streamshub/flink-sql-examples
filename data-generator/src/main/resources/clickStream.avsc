@@ -1,0 +1,9 @@
+{
+  "namespace": "com.github.streamshub.kafka.data.generator.schema",
+  "type": "record",
+  "name": "ClickStream",
+  "fields": [
+    {"name": "user_id", "type": "string"},
+    {"name": "product_id",  "type": "string"}
+  ]
+}
