@@ -6,9 +6,7 @@ to Apache Kafka topics.
 
 The `data-generator` module contains an application that can provide the streams of data for the different examples.
 
-## Running the examples
-
-The steps to run each example are very similar _(TODO add steps for running Flink SQL)_:
+## Setting up the environment for running an example
 
 1. Start minikube with the following resources.
 
@@ -54,14 +52,7 @@ The steps to run each example are very similar _(TODO add steps for running Flin
     mvn clean package && minikube image build data-generator -t data-generator:latest
     ```
 
-12. Apply the `data-generator` Kubernetes Deployment for the specific example you are running:
-    ```
-    kubectl apply -f <EXAMPLE_DIRECTORY>/data-generator.yaml -n flink
-    ```
-13. Apply the FlinkDeployment for the specific example you are running:
-    ```
-    kubectl apply -f <EXAMPLE_DIRECTORY>/flink-deployment.yaml -n flink
-    ```
+The steps to run each example are described in their own README. 
 
 The source topics for the example will contain Avro records.
 You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-api 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
