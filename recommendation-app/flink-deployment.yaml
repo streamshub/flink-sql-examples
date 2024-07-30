@@ -9,6 +9,24 @@ spec:
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
   serviceAccount: flink
+  podTemplate:
+    kind: Pod
+    metadata:
+      name: recommendation-app
+    spec:
+      containers:
+        - name: flink-main-container
+          image: flink-sql-runner:latest
+          volumeMounts:
+            - name: product-inventory-vol
+              mountPath: /opt/flink/data
+      volumes:
+        - name: product-inventory-vol
+          configMap:
+            name: product-inventory
+            items:
+              - key: productInventory.csv
+                path: productInventory.csv
   jobManager:
     resource:
       memory: "2048m"
