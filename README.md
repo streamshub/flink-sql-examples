@@ -61,4 +61,6 @@ You can view the Apicurio Registry UI by running `kubectl port-forward service/a
 
 It is possible to run the `data-generator` so that it produces CSV records, rather than Avro records.
 In the `<EXAMPLE_DIRECTORY>/data-generator.yaml` file change the `USE_APICURIO_REGISTRY` to false.
-_TODO: decide whether to provide non-Avro versions of the SQL statements_
+In the SQL statements supplied in the `args` in the `<EXAMPLE_DIRECTORY>/flink-deployment.yaml`, switch to using CSV:
+  - Change `'value.format' = 'avro-confluent'` to `'format' = 'csv'`.
+  - Remove `value.avro-confluent.schema-registry.url`.
