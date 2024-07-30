@@ -33,7 +33,7 @@ The steps in the [README.md](../README.md) required to be completed for setting 
    It continuously produces sample data to `flink.sales.record` and `flink.click.streams`.
 2. Create a ConfigMap that holds product inventory data in CSV format. 
     ```
-    kubectl create configmap --from-file recommendation-app/productInventory.csv -n flink
+    kubectl create configmap product-inventory --from-file recommendation-app/productInventory.csv -n flink
     ```
    The ConfigMap will be volume mounted to the recommendation-app pods.
 3. Apply the FlinkDeployment for the recommendation-app:
