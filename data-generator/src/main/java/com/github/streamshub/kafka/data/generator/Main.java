@@ -26,11 +26,11 @@ public class Main {
     }
 
     private static Data getDataClass(String dataType) {
-        Data data = null;
+        Data data;
         switch(dataType) {
             case "clickStream" -> data = new ClickStreamData();
             case "sales" -> data = new SalesData();
-            default -> System.out.println("Unknown data type " + dataType);
+            default -> throw new RuntimeException("Unknown data type " + dataType);
         }
         return data;
     }

@@ -43,14 +43,14 @@ The `data-generator` module contains an application that can provide the streams
    kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
    ```
 10. Deploy Flink Kubernetes Operator 1.8.0 (the latest stable version):
-    ```
-     helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.8.0/
-     helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator -n flink
-    ```
+   ```
+   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.8.0/
+   helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator -n flink
+   ```
 11. Build the `data-generator` image:
-    ```
-    mvn clean package && minikube image build data-generator -t data-generator:latest
-    ```
+   ```
+   mvn clean package && minikube image build data-generator -t data-generator:latest
+   ```
 
 The steps to run each example are described in their own README. 
 
