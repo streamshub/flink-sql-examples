@@ -8,7 +8,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 public class DataGenerator implements Runnable {
@@ -57,16 +56,22 @@ public class DataGenerator implements Runnable {
             while (true) {
                 List<ProducerRecord<String, V>> producerRecords = recordsSupplier.get();
                 for (ProducerRecord<String, V> record : producerRecords) {
-                    producer.send(record).get();
-                    System.out.println("Kafka Data Generator : Sent record to topic " + record.topic() + " with value: " +
-                            record.value());
+                    try {
+                        producer.send(record).get();
+                        System.out.println("Kafka Data Generator : Sent record to topic " + record.topic() +
+                                " with value: " + record.value());
+                    } catch (Exception e) {
+                        System.out.println("Kafka Data Generator : Encountered error sending record to topic " + record.topic() +
+                                " with value: " + record.value());
+                        e.printStackTrace();
+                    }
                 }
 
                 Thread.sleep(3000);
 
             }
 
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
