@@ -3,14 +3,11 @@ package com.github.streamshub.kafka.data.generator.examples;
 import com.github.streamshub.kafka.data.generator.Data;
 import com.github.streamshub.kafka.data.generator.schema.ClickStream;
 import org.apache.avro.Schema;
+import org.apache.avro.specific.SpecificRecord;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class ClickStreamData implements Data {
-    private final static String USER_ID = "user_id";
-    private final static String PRODUCT_ID = "product_id";
     private final Random random = new Random();
 
     public String topic() {
@@ -19,10 +16,23 @@ public class ClickStreamData implements Data {
     public Schema schema() {
         return ClickStream.SCHEMA$;
     }
-    public Map<String, String> generate() {
-        Map<String, String> data = new HashMap<>();
-        data.put(USER_ID, "user-" + Math.abs(random.nextInt(100)));
-        data.put(PRODUCT_ID, String.valueOf(Math.abs(random.nextInt(200))));
-        return data;
+
+    public SpecificRecord generate() {
+        return ClickStream.newBuilder()
+                .setUserId(generateUserId())
+                .setProductId(generateProductId())
+                .build();
+    }
+
+    public String generateCsv() {
+        return String.join(",", generateUserId(), generateProductId());
+    }
+
+    private String generateUserId() {
+        return "user-" + Math.abs(random.nextInt(100));
+    }
+
+    private String generateProductId() {
+        return String.valueOf(Math.abs(random.nextInt(200)));
     }
 }

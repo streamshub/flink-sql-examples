@@ -1,13 +1,10 @@
 package com.github.streamshub.kafka.data.generator;
 
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class DataGenerator implements Runnable {
@@ -32,14 +29,11 @@ public class DataGenerator implements Runnable {
     }
 
     private ProducerRecord<String, Object> generateAvroRecord(Data data) {
-        Map<String, String> generatedData = data.generate();
-        GenericRecord avroRecord = new GenericData.Record(data.schema());
-        generatedData.forEach(avroRecord::put);
-        return getKafkaProducerRecord(data, avroRecord);
+        return getKafkaProducerRecord(data, data.generate());
     }
 
     private ProducerRecord<String, String> generateCsvRecord(Data data) {
-        return getKafkaProducerRecord(data, String.join(",", data.generate().values()));
+        return getKafkaProducerRecord(data, data.generateCsv());
     }
 
     private static <V> ProducerRecord<String, V> getKafkaProducerRecord(Data data, V value) {

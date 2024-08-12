@@ -13,8 +13,8 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
   private static final long serialVersionUID = -8865219346157340073L;
   public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ClickStream\",\"namespace\":\"com.github.streamshub.kafka.data.generator.schema\",\"fields\":[{\"name\":\"user_id\",\"type\":\"string\"},{\"name\":\"product_id\",\"type\":\"string\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
-  @Deprecated public CharSequence user_id;
-  @Deprecated public CharSequence product_id;
+  @Deprecated public java.lang.CharSequence user_id;
+  @Deprecated public java.lang.CharSequence product_id;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -28,14 +28,14 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
    * @param user_id The new value for user_id
    * @param product_id The new value for product_id
    */
-  public ClickStream(CharSequence user_id, CharSequence product_id) {
+  public ClickStream(java.lang.CharSequence user_id, java.lang.CharSequence product_id) {
     this.user_id = user_id;
     this.product_id = product_id;
   }
 
   public org.apache.avro.Schema getSchema() { return SCHEMA$; }
   // Used by DatumWriter.  Applications should not call.
-  public Object get(int field$) {
+  public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return user_id;
     case 1: return product_id;
@@ -45,10 +45,10 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
 
   // Used by DatumReader.  Applications should not call.
   @SuppressWarnings(value="unchecked")
-  public void put(int field$, Object value$) {
+  public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: user_id = (CharSequence)value$; break;
-    case 1: product_id = (CharSequence)value$; break;
+    case 0: user_id = (java.lang.CharSequence)value$; break;
+    case 1: product_id = (java.lang.CharSequence)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -57,7 +57,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
    * Gets the value of the 'user_id' field.
    * @return The value of the 'user_id' field.
    */
-  public CharSequence getUserId() {
+  public java.lang.CharSequence getUserId() {
     return user_id;
   }
 
@@ -65,7 +65,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
    * Sets the value of the 'user_id' field.
    * @param value the value to set.
    */
-  public void setUserId(CharSequence value) {
+  public void setUserId(java.lang.CharSequence value) {
     this.user_id = value;
   }
 
@@ -73,7 +73,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
    * Gets the value of the 'product_id' field.
    * @return The value of the 'product_id' field.
    */
-  public CharSequence getProductId() {
+  public java.lang.CharSequence getProductId() {
     return product_id;
   }
 
@@ -81,7 +81,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
    * Sets the value of the 'product_id' field.
    * @param value the value to set.
    */
-  public void setProductId(CharSequence value) {
+  public void setProductId(java.lang.CharSequence value) {
     this.product_id = value;
   }
 
@@ -117,8 +117,8 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<ClickStream>
     implements org.apache.avro.data.RecordBuilder<ClickStream> {
 
-    private CharSequence user_id;
-    private CharSequence product_id;
+    private java.lang.CharSequence user_id;
+    private java.lang.CharSequence product_id;
 
     /** Creates a new Builder */
     private Builder() {
@@ -161,7 +161,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
       * Gets the value of the 'user_id' field.
       * @return The value.
       */
-    public CharSequence getUserId() {
+    public java.lang.CharSequence getUserId() {
       return user_id;
     }
 
@@ -170,7 +170,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
       * @param value The value of 'user_id'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.ClickStream.Builder setUserId(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.ClickStream.Builder setUserId(java.lang.CharSequence value) {
       validate(fields()[0], value);
       this.user_id = value;
       fieldSetFlags()[0] = true;
@@ -200,7 +200,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
       * Gets the value of the 'product_id' field.
       * @return The value.
       */
-    public CharSequence getProductId() {
+    public java.lang.CharSequence getProductId() {
       return product_id;
     }
 
@@ -209,7 +209,7 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
       * @param value The value of 'product_id'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.ClickStream.Builder setProductId(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.ClickStream.Builder setProductId(java.lang.CharSequence value) {
       validate(fields()[1], value);
       this.product_id = value;
       fieldSetFlags()[1] = true;
@@ -239,8 +239,8 @@ public class ClickStream extends org.apache.avro.specific.SpecificRecordBase imp
     public ClickStream build() {
       try {
         ClickStream record = new ClickStream();
-        record.user_id = fieldSetFlags()[0] ? this.user_id : (CharSequence) defaultValue(fields()[0]);
-        record.product_id = fieldSetFlags()[1] ? this.product_id : (CharSequence) defaultValue(fields()[1]);
+        record.user_id = fieldSetFlags()[0] ? this.user_id : (java.lang.CharSequence) defaultValue(fields()[0]);
+        record.product_id = fieldSetFlags()[1] ? this.product_id : (java.lang.CharSequence) defaultValue(fields()[1]);
         return record;
       } catch (Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
