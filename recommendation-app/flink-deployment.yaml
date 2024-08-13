@@ -3,8 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image:  flink-sql-runner:latest
-  imagePullPolicy: Never
+  image: quay.io/streamshub/flink-sql-runner:latest
   flinkVersion: v1_19
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
@@ -16,7 +15,7 @@ spec:
     spec:
       containers:
         - name: flink-main-container
-          image: flink-sql-runner:latest
+          image: quay.io/streamshub/flink-sql-runner:latest
           volumeMounts:
             - name: product-inventory-vol
               mountPath: /opt/flink/data

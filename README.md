@@ -20,39 +20,33 @@ The `data-generator` module contains an application that can provide the streams
    ```
    kubectl create namespace flink
    ```
-3. Check out the [streamshub/flink-sql-runner](https://github.com/streamshub/flink-sql) repository and navigate to the repository.
-4. In the `flink-sql-runner` repository build the Flink SQL jar:
-   ```
-   mvn package && minikube image build flink-sql-runner -t flink-sql-runner:latest
-   ```
-5. Navigate back to the `flink-sql-examples` repository.
-6. Apply the Strimzi QuickStart:
+3. Apply the Strimzi QuickStart:
    ```
    kubectl create -f 'https://strimzi.io/install/latest?namespace=flink' -n flink
    ```
-7. Create a Kafka:
+4. Create a Kafka:
    ```
    kubectl apply -f https://strimzi.io/examples/latest/kafka/kraft/kafka-single-node.yaml -n flink 
    ```
-8. Install Apicurio Registry:
+5. Install Apicurio Registry:
    ```
    kubectl apply -f apicurio-registry.yaml -n flink
    ```
-9. Install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
+6. Install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
    ```
    kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
    ```
-10. Deploy Flink Kubernetes Operator 1.8.0 (the latest stable version):
+7. Deploy Flink Kubernetes Operator 1.8.0 (the latest stable version):
    ```
    helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.8.0/
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator -n flink
    ```
-11. Build the `data-generator` image:
+8. Build the `data-generator` image:
    ```
    mvn clean package && minikube image build data-generator -t data-generator:latest
    ```
 
-The steps to run each example are described in their own README. 
+The steps to run each example are described in their own README.
 
 The source topics for the example will contain Avro records.
 You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-api 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
