@@ -13,11 +13,11 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
   private static final long serialVersionUID = 2977823418513823295L;
   public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Sales\",\"namespace\":\"com.github.streamshub.kafka.data.generator.schema\",\"fields\":[{\"name\":\"user_id\",\"type\":\"string\"},{\"name\":\"product_id\",\"type\":\"string\"},{\"name\":\"invoice_id\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"string\"},{\"name\":\"unit_cost\",\"type\":\"string\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
-  @Deprecated public CharSequence user_id;
-  @Deprecated public CharSequence product_id;
-  @Deprecated public CharSequence invoice_id;
-  @Deprecated public CharSequence quantity;
-  @Deprecated public CharSequence unit_cost;
+  @Deprecated public java.lang.CharSequence user_id;
+  @Deprecated public java.lang.CharSequence product_id;
+  @Deprecated public java.lang.CharSequence invoice_id;
+  @Deprecated public java.lang.CharSequence quantity;
+  @Deprecated public java.lang.CharSequence unit_cost;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -34,7 +34,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * @param quantity The new value for quantity
    * @param unit_cost The new value for unit_cost
    */
-  public Sales(CharSequence user_id, CharSequence product_id, CharSequence invoice_id, CharSequence quantity, CharSequence unit_cost) {
+  public Sales(java.lang.CharSequence user_id, java.lang.CharSequence product_id, java.lang.CharSequence invoice_id, java.lang.CharSequence quantity, java.lang.CharSequence unit_cost) {
     this.user_id = user_id;
     this.product_id = product_id;
     this.invoice_id = invoice_id;
@@ -44,7 +44,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
 
   public org.apache.avro.Schema getSchema() { return SCHEMA$; }
   // Used by DatumWriter.  Applications should not call.
-  public Object get(int field$) {
+  public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return user_id;
     case 1: return product_id;
@@ -57,13 +57,13 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
 
   // Used by DatumReader.  Applications should not call.
   @SuppressWarnings(value="unchecked")
-  public void put(int field$, Object value$) {
+  public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: user_id = (CharSequence)value$; break;
-    case 1: product_id = (CharSequence)value$; break;
-    case 2: invoice_id = (CharSequence)value$; break;
-    case 3: quantity = (CharSequence)value$; break;
-    case 4: unit_cost = (CharSequence)value$; break;
+    case 0: user_id = (java.lang.CharSequence)value$; break;
+    case 1: product_id = (java.lang.CharSequence)value$; break;
+    case 2: invoice_id = (java.lang.CharSequence)value$; break;
+    case 3: quantity = (java.lang.CharSequence)value$; break;
+    case 4: unit_cost = (java.lang.CharSequence)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -72,7 +72,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Gets the value of the 'user_id' field.
    * @return The value of the 'user_id' field.
    */
-  public CharSequence getUserId() {
+  public java.lang.CharSequence getUserId() {
     return user_id;
   }
 
@@ -80,7 +80,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Sets the value of the 'user_id' field.
    * @param value the value to set.
    */
-  public void setUserId(CharSequence value) {
+  public void setUserId(java.lang.CharSequence value) {
     this.user_id = value;
   }
 
@@ -88,7 +88,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Gets the value of the 'product_id' field.
    * @return The value of the 'product_id' field.
    */
-  public CharSequence getProductId() {
+  public java.lang.CharSequence getProductId() {
     return product_id;
   }
 
@@ -96,7 +96,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Sets the value of the 'product_id' field.
    * @param value the value to set.
    */
-  public void setProductId(CharSequence value) {
+  public void setProductId(java.lang.CharSequence value) {
     this.product_id = value;
   }
 
@@ -104,7 +104,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Gets the value of the 'invoice_id' field.
    * @return The value of the 'invoice_id' field.
    */
-  public CharSequence getInvoiceId() {
+  public java.lang.CharSequence getInvoiceId() {
     return invoice_id;
   }
 
@@ -112,7 +112,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Sets the value of the 'invoice_id' field.
    * @param value the value to set.
    */
-  public void setInvoiceId(CharSequence value) {
+  public void setInvoiceId(java.lang.CharSequence value) {
     this.invoice_id = value;
   }
 
@@ -120,7 +120,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Gets the value of the 'quantity' field.
    * @return The value of the 'quantity' field.
    */
-  public CharSequence getQuantity() {
+  public java.lang.CharSequence getQuantity() {
     return quantity;
   }
 
@@ -128,7 +128,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Sets the value of the 'quantity' field.
    * @param value the value to set.
    */
-  public void setQuantity(CharSequence value) {
+  public void setQuantity(java.lang.CharSequence value) {
     this.quantity = value;
   }
 
@@ -136,7 +136,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Gets the value of the 'unit_cost' field.
    * @return The value of the 'unit_cost' field.
    */
-  public CharSequence getUnitCost() {
+  public java.lang.CharSequence getUnitCost() {
     return unit_cost;
   }
 
@@ -144,7 +144,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
    * Sets the value of the 'unit_cost' field.
    * @param value the value to set.
    */
-  public void setUnitCost(CharSequence value) {
+  public void setUnitCost(java.lang.CharSequence value) {
     this.unit_cost = value;
   }
 
@@ -180,11 +180,11 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<Sales>
     implements org.apache.avro.data.RecordBuilder<Sales> {
 
-    private CharSequence user_id;
-    private CharSequence product_id;
-    private CharSequence invoice_id;
-    private CharSequence quantity;
-    private CharSequence unit_cost;
+    private java.lang.CharSequence user_id;
+    private java.lang.CharSequence product_id;
+    private java.lang.CharSequence invoice_id;
+    private java.lang.CharSequence quantity;
+    private java.lang.CharSequence unit_cost;
 
     /** Creates a new Builder */
     private Builder() {
@@ -251,7 +251,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * Gets the value of the 'user_id' field.
       * @return The value.
       */
-    public CharSequence getUserId() {
+    public java.lang.CharSequence getUserId() {
       return user_id;
     }
 
@@ -260,7 +260,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * @param value The value of 'user_id'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setUserId(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setUserId(java.lang.CharSequence value) {
       validate(fields()[0], value);
       this.user_id = value;
       fieldSetFlags()[0] = true;
@@ -290,7 +290,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * Gets the value of the 'product_id' field.
       * @return The value.
       */
-    public CharSequence getProductId() {
+    public java.lang.CharSequence getProductId() {
       return product_id;
     }
 
@@ -299,7 +299,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * @param value The value of 'product_id'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setProductId(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setProductId(java.lang.CharSequence value) {
       validate(fields()[1], value);
       this.product_id = value;
       fieldSetFlags()[1] = true;
@@ -329,7 +329,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * Gets the value of the 'invoice_id' field.
       * @return The value.
       */
-    public CharSequence getInvoiceId() {
+    public java.lang.CharSequence getInvoiceId() {
       return invoice_id;
     }
 
@@ -338,7 +338,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * @param value The value of 'invoice_id'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setInvoiceId(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setInvoiceId(java.lang.CharSequence value) {
       validate(fields()[2], value);
       this.invoice_id = value;
       fieldSetFlags()[2] = true;
@@ -368,7 +368,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * Gets the value of the 'quantity' field.
       * @return The value.
       */
-    public CharSequence getQuantity() {
+    public java.lang.CharSequence getQuantity() {
       return quantity;
     }
 
@@ -377,7 +377,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * @param value The value of 'quantity'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setQuantity(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setQuantity(java.lang.CharSequence value) {
       validate(fields()[3], value);
       this.quantity = value;
       fieldSetFlags()[3] = true;
@@ -407,7 +407,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * Gets the value of the 'unit_cost' field.
       * @return The value.
       */
-    public CharSequence getUnitCost() {
+    public java.lang.CharSequence getUnitCost() {
       return unit_cost;
     }
 
@@ -416,7 +416,7 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
       * @param value The value of 'unit_cost'.
       * @return This builder.
       */
-    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setUnitCost(CharSequence value) {
+    public com.github.streamshub.kafka.data.generator.schema.Sales.Builder setUnitCost(java.lang.CharSequence value) {
       validate(fields()[4], value);
       this.unit_cost = value;
       fieldSetFlags()[4] = true;
@@ -446,11 +446,11 @@ public class Sales extends org.apache.avro.specific.SpecificRecordBase implement
     public Sales build() {
       try {
         Sales record = new Sales();
-        record.user_id = fieldSetFlags()[0] ? this.user_id : (CharSequence) defaultValue(fields()[0]);
-        record.product_id = fieldSetFlags()[1] ? this.product_id : (CharSequence) defaultValue(fields()[1]);
-        record.invoice_id = fieldSetFlags()[2] ? this.invoice_id : (CharSequence) defaultValue(fields()[2]);
-        record.quantity = fieldSetFlags()[3] ? this.quantity : (CharSequence) defaultValue(fields()[3]);
-        record.unit_cost = fieldSetFlags()[4] ? this.unit_cost : (CharSequence) defaultValue(fields()[4]);
+        record.user_id = fieldSetFlags()[0] ? this.user_id : (java.lang.CharSequence) defaultValue(fields()[0]);
+        record.product_id = fieldSetFlags()[1] ? this.product_id : (java.lang.CharSequence) defaultValue(fields()[1]);
+        record.invoice_id = fieldSetFlags()[2] ? this.invoice_id : (java.lang.CharSequence) defaultValue(fields()[2]);
+        record.quantity = fieldSetFlags()[3] ? this.quantity : (java.lang.CharSequence) defaultValue(fields()[3]);
+        record.unit_cost = fieldSetFlags()[4] ? this.unit_cost : (java.lang.CharSequence) defaultValue(fields()[4]);
         return record;
       } catch (Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
