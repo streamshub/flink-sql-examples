@@ -8,45 +8,65 @@ The `data-generator` module contains an application that can provide the streams
 
 ## Setting up the environment for running an example
 
-1. Start minikube with the following resources.
+### Prerequisites
 
+* Kubernetes cluster
+  * If you are using minikube we recommend the following resources as a minimum:
+     ```
+     MINIKUBE_CPUS=4
+     MINIKUBE_MEMORY=16384
+     MINIKUBE_DISK_SIZE=25GB
+     ```
+* [`kubectl`](https://kubernetes.io/docs/reference/kubectl/) CLI or equivalent
+  * For example, if you are using RedHat OpenShift you can substitute `kubectl` for [`oc`](https://docs.openshift.com/container-platform/4.16/cli_reference/openshift_cli/getting-started-cli.html) in the instructions
+* [`docker`](https://docs.docker.com/install/) or [`podman`](https://podman.io/docs/installation)
+
+### Building the data-generator application
+
+The container image for the data-generator application is in [quay.io](https://quay.io/repository/streamshub/data-generator), however you can build the image yourself.
+If you choose to do this make sure you update the `data-generator.yaml` file for the example to point to your new image.
+
+1. Build the application:
    ```
-   MINIKUBE_CPUS=4
-   MINIKUBE_MEMORY=16384
-   MINIKUBE_DISK_SIZE=25GB
+   mvn clean package
+   ```
+2. Build the image:
+   ```
+   ${BUILD_COMMAND} -t data-generator:latest data-generator
    ```
 
-2. Create a `flink` namespace:
+### Installing Apache Kafka, Apache Flink and Apicurio Registry
+
+1. Create a `flink` namespace:
    ```
    kubectl create namespace flink
    ```
-3. Apply the Strimzi QuickStart:
+2. Apply the Strimzi QuickStart:
    ```
    kubectl create -f 'https://strimzi.io/install/latest?namespace=flink' -n flink
    ```
-4. Create a Kafka:
+3. Create an Apache Kafka cluster:
    ```
    kubectl apply -f https://strimzi.io/examples/latest/kafka/kraft/kafka-single-node.yaml -n flink 
    ```
-5. Install Apicurio Registry:
+4. Install Apicurio Registry:
    ```
    kubectl apply -f apicurio-registry.yaml -n flink
    ```
-6. Install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
+5. Install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
    ```
    kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
    ```
-7. Deploy Flink Kubernetes Operator 1.8.0 (the latest stable version):
+6. Deploy Flink Kubernetes Operator 1.8.0 (the latest stable version):
    ```
    helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.8.0/
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator -n flink
    ```
-8. Build the `data-generator` image:
-   ```
-   mvn clean package && minikube image build data-generator -t data-generator:latest
-   ```
+
+### Running an example
 
 The steps to run each example are described in their own README.
+Make sure you have already [installed Apache Kafka, Apache Flink and Apicurio Registry](#installing-apache-kafka-apache-flink-and-apicurio-registry).
 
 The source topics for the example will contain Avro records.
 You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-api 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
