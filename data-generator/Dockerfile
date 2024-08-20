@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 
 USER root
 
-RUN microdnf update \
+RUN microdnf -y update \
     && microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y java-17-openjdk-headless shadow-utils \
     && microdnf clean all
 
