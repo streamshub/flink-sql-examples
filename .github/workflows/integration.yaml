@@ -57,4 +57,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           file: data-generator/Dockerfile
-          tags: ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/data-generator:latest
+          tags: ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-examples-data-generator:latest

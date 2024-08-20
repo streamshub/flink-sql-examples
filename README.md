@@ -23,7 +23,7 @@ The `data-generator` module contains an application that can provide the streams
 
 ### Building the data-generator application
 
-The container image for the data-generator application is in [quay.io](https://quay.io/repository/streamshub/data-generator), however you can build the image yourself.
+The container image for the data-generator application is in [quay.io](https://quay.io/repository/streamshub/flink-examples-data-generator), however you can build the image yourself.
 If you choose to do this make sure you update the `data-generator.yaml` file for the example to point to your new image.
 
 1. Build the application:
@@ -32,7 +32,7 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
    ```
 2. Build the image:
    ```
-   ${BUILD_COMMAND} -t data-generator:latest data-generator
+   ${BUILD_COMMAND} -t flink-examples-data-generator:latest data-generator
    ```
 
 ### Installing Apache Kafka, Apache Flink and Apicurio Registry
@@ -55,11 +55,11 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
    ```
 5. Install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
    ```
-   kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
+   kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.15.2/cert-manager.yaml
    ```
-6. Deploy Flink Kubernetes Operator 1.8.0 (the latest stable version):
+6. Deploy Flink Kubernetes Operator 1.9.0 (the latest stable version):
    ```
-   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.8.0/
+   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.9.0/
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator -n flink
    ```
 
