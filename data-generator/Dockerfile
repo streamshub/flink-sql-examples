@@ -7,7 +7,7 @@ RUN microdnf -y update \
     && microdnf clean all
 
 # Set JAVA_HOME env var
-ENV JAVA_HOME /usr/lib/jvm/jre-17
+ENV JAVA_HOME=/usr/lib/jvm/jre-17
 
 ADD target/data-generator-*.jar /data-generator.jar
 
