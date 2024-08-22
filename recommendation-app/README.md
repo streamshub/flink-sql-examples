@@ -30,7 +30,7 @@ The steps in the [README.md](../README.md) required to be completed for setting 
     ```
     kubectl apply -f recommendation-app/data-generator.yaml -n flink
     ```
-   It continuously produces sample data to `flink.sales.record` and `flink.click.streams`.
+   It continuously produces sample data to `flink.sales.records` and `flink.click.streams`.
 2. Create a ConfigMap that holds product inventory data in CSV format. 
     ```
     kubectl create configmap product-inventory --from-file recommendation-app/productInventory.csv -n flink
