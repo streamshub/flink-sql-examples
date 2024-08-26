@@ -25,4 +25,4 @@ spec:
             - name: USE_APICURIO_REGISTRY
               value: "true"
             - name: REGISTRY_URL
-              value: "http://apicurio-registry-api.flink.svc:8080/apis/registry/v2"
+              value: "http://apicurio-registry-service.flink.svc:8080/apis/registry/v2"
