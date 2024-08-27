@@ -69,7 +69,7 @@ The steps to run each example are described in their own README.
 Make sure you have already [installed Apache Kafka, Apache Flink and Apicurio Registry](#installing-apache-kafka-apache-flink-and-apicurio-registry).
 
 The source topics for the example will contain Avro records.
-You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-api 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
+You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-service 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
 
 # Running the data-generator without a schema registry
 
