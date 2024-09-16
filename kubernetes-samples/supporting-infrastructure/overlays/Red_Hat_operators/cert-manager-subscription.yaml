@@ -13,3 +13,5 @@ spec:
   source: redhat-operators
   sourceNamespace: openshift-marketplace
   startingCSV: cert-manager-operator.v1.14.0
+  targetNamespaces:
+    - "cert-manager-operator"
