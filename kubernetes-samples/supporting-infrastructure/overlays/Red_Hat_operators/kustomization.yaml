@@ -8,6 +8,5 @@ resources:
 #  - ../../base/
   - streams-subscription.yaml
   - registry-subscription.yaml
-  - cert-manager-namespace.yaml
-  - cert-manager-subscription.yaml
+  - cert-manager.yaml
 
