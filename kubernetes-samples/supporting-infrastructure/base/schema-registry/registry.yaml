@@ -1,0 +1,13 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry
+metadata:
+  name: kafkasql-registry
+  namespace: apicurio
+spec:
+  configuration:
+    persistence: kafkasql
+    kafkasql:
+      bootstrapServers: 'flink-demo-kafka-kafka-bootstrap.kafka.svc:9092'
+    logLevel: INFO
+    registryLogLevel: INFO
+
