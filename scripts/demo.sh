@@ -38,9 +38,9 @@ installPrerequisites() {
   fi
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/base/"
   if [[ ${OPERATORS} == "Red_Hat" ]]; then
-    if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry ; then
+    if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry -n apicurio ; then
       local REGISTRY_URL=""
-      REGISTRY_URL=$(oc get ApicurioRegistry kafkasql-registry -o=jsonpath='{.spec.deployment.host}')
+      REGISTRY_URL=$(oc get ApicurioRegistry kafkasql-registry -n apicurio -o=jsonpath='{.spec.deployment.host}')
       echo -e "${GREEN}Apicurio Registry is accesable as ${REGISTRY_URL} ${NO_COLOUR}"
     else
       echo -e "${RED}Apicurio Registry does not have a deployment host ${NO_COLOUR}"
