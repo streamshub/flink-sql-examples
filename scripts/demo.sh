@@ -48,6 +48,11 @@ installPrerequisites() {
   fi
 }
 
+installFlink() {
+  helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.9.0/
+  helm upgrade --install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n flink
+}
+
 # User customisations
 CONTAINER_ENGINE=$(resolveCommand "${CONTAINER_ENGINE:-docker}")
 KUBE_COMMAND=$(resolveCommand "${KUBE_COMMAND:-kubectl}")
@@ -65,6 +70,9 @@ echo "Building Image using ${CONTAINER_ENGINE}"
 ${CONTAINER_ENGINE} build -f "${EXAMPLES_DIR}/data-generator/Dockerfile" -t flink-examples-data-generator:latest data-generator
 
 ${KUBE_COMMAND} create namespace "${TARGET_NAMESPACE}" --save-config 2> /dev/null || true
+
 installPrerequisites
+
+installFlink
 
 popd >&2 > /dev/null  || exit
