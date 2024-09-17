@@ -54,7 +54,7 @@ installFlink() {
 }
 
 installDemoApp() {
-  ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/recommendations-demo"
+  ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/recommendations-demo/base"
 }
 
 # User customisations
