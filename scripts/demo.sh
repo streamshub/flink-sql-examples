@@ -53,6 +53,10 @@ installFlink() {
   helm upgrade --install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n flink
 }
 
+installDemoApp() {
+  ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/recommendations-demo"
+}
+
 # User customisations
 CONTAINER_ENGINE=$(resolveCommand "${CONTAINER_ENGINE:-docker}")
 KUBE_COMMAND=$(resolveCommand "${KUBE_COMMAND:-kubectl}")
@@ -74,5 +78,7 @@ ${KUBE_COMMAND} create namespace "${TARGET_NAMESPACE}" --save-config 2> /dev/nul
 installPrerequisites
 
 installFlink
+
+installDemoApp
 
 popd >&2 > /dev/null  || exit
