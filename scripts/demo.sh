@@ -22,7 +22,14 @@ resolveCommand () {
   fi
 }
 
+buildDataGenerator() {
+  echo -e "${GREEN}Building data generator${NO_COLOUR}"
+  ${MAVEN_COMMAND} -f "${EXAMPLES_DIR}/pom.xml" clean package
+  ${CONTAINER_ENGINE} build -f "${EXAMPLES_DIR}/data-generator/Dockerfile" -t flink-examples-data-generator:latest data-generator
+}
+
 installPrerequisites() {
+  echo -e "${GREEN}installing ${OPERATORS}${NO_COLOUR}"
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/overlays/${OPERATORS}_operators"
   if [[ ${OPERATORS} == "Red_Hat" ]]; then
     local AMQ_STREAMS_VERSION=""
@@ -49,6 +56,7 @@ installPrerequisites() {
 }
 
 installFlink() {
+  ${KUBE_COMMAND} create namespace flink --save-config 2> /dev/null || true
   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.9.0/
   helm upgrade --install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n flink
 }
@@ -61,19 +69,12 @@ installDemoApp() {
 CONTAINER_ENGINE=$(resolveCommand "${CONTAINER_ENGINE:-docker}")
 KUBE_COMMAND=$(resolveCommand "${KUBE_COMMAND:-kubectl}")
 MAVEN_COMMAND=$(resolveCommand "${MAVEN_COMMAND:-mvn}")
-TARGET_NAMESPACE=${TARGET_NAMESPACE:-flink}
 OPERATORS=${OPERATORS:-upstream}
 
 pushd .
 cd "${EXAMPLES_DIR}" || exit
 
-echo "Building data generator"
-${MAVEN_COMMAND} -f "${EXAMPLES_DIR}/pom.xml" clean package
-
-echo "Building Image using ${CONTAINER_ENGINE}"
-${CONTAINER_ENGINE} build -f "${EXAMPLES_DIR}/data-generator/Dockerfile" -t flink-examples-data-generator:latest data-generator
-
-${KUBE_COMMAND} create namespace "${TARGET_NAMESPACE}" --save-config 2> /dev/null || true
+buildDataGenerator
 
 installPrerequisites
 
