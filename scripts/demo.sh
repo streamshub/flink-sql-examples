@@ -44,7 +44,7 @@ installPrerequisites() {
     echo "upstream"
   fi
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/base/"
-  if [[ ${OPERATORS} == "Red_Hat" ]]; then
+#  if [[ ${OPERATORS} == "Red_Hat" ]]; then
     if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry -n apicurio ; then
       local REGISTRY_URL=""
       REGISTRY_URL=$(oc get ApicurioRegistry kafkasql-registry -n apicurio -o=jsonpath='{.spec.deployment.host}')
@@ -52,7 +52,7 @@ installPrerequisites() {
     else
       echo -e "${RED}Apicurio Registry does not have a deployment host ${NO_COLOUR}"
     fi
-  fi
+#  fi
 }
 
 installFlink() {
