@@ -29,29 +29,31 @@ buildDataGenerator() {
 }
 
 installPrerequisites() {
-  echo -e "${GREEN}installing ${OPERATORS}${NO_COLOUR}"
+  echo -e "${BLUE}Installing ${OPERATORS} operators${NO_COLOUR}"
 
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/overlays/${OPERATORS}_operators"
 
   if [[ ${OPERATORS} == "Red_Hat" ]]; then
     local AMQ_STREAMS_VERSION=""
-    ${KUBE_COMMAND} wait --for=jsonpath="{.status.state}='AtLatestVersion'" subscription amq-streams -n openshift-operators >&2 > /dev/null
-    AMQ_STREAMS_VERSION=$( ${KUBE_COMMAND} get subscription amq-streams -n openshift-operators -o=jsonpath='{.status.installedCSV}' )
-    if ${KUBE_COMMAND} wait --for=jsonpath="{.status.phase}='Succeeded'" csv "${AMQ_STREAMS_VERSION}" >&2 > /dev/null ; then
-      echo -e "${GREEN}streams for Apache Kafka ${AMQ_STREAMS_VERSION} installed${NO_COLOUR}"
-    else
-      echo -e "${RED}There was a problem installing streams for Apache Kafka ${NO_COLOUR}"
+    if ${KUBE_COMMAND} wait --for=jsonpath="{.status.state}='AtLatestVersion'" subscription amq-streams -n openshift-operators >&2 > /dev/null ; then
+      AMQ_STREAMS_VERSION=$( ${KUBE_COMMAND} get subscription amq-streams -n openshift-operators -o=jsonpath='{.status.installedCSV}' )
+      if ${KUBE_COMMAND} wait --for=jsonpath="{.status.phase}='Succeeded'" csv "${AMQ_STREAMS_VERSION}" >&2 > /dev/null ; then
+        echo -e "${GREEN}streams for Apache Kafka ${AMQ_STREAMS_VERSION} installed${NO_COLOUR}"
+      else
+        echo -e "${YELLOW}There was a problem installing streams for Apache Kafka. Re-run this script or check deployment status${NO_COLOUR}"
+      fi
     fi
   else
-    echo "upstream"
+    # TODO wait for strimzi to be ready.
+    echo "wait for Strimzi to be ready"
   fi
 
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/base/"
 
   if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry -n apicurio ; then
-    local REGISTRY_URL=""
-    REGISTRY_URL=$(oc get ApicurioRegistry kafkasql-registry -n apicurio -o=jsonpath='{.spec.deployment.host}')
-    echo -e "${GREEN}Apicurio Registry is accesable as ${REGISTRY_URL} ${NO_COLOUR}"
+    local REGISTRY_HOST=""
+    REGISTRY_HOST=$(oc get ApicurioRegistry kafkasql-registry -n apicurio -o=jsonpath='{.spec.deployment.host}')
+    echo -e "${GREEN}Apicurio Registry is accessible as http://${REGISTRY_HOST} ${NO_COLOUR}"
   else
     echo -e "${RED}Apicurio Registry does not have a deployment host ${NO_COLOUR}"
   fi
