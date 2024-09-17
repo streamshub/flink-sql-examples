@@ -30,7 +30,9 @@ buildDataGenerator() {
 
 installPrerequisites() {
   echo -e "${GREEN}installing ${OPERATORS}${NO_COLOUR}"
+
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/overlays/${OPERATORS}_operators"
+
   if [[ ${OPERATORS} == "Red_Hat" ]]; then
     local AMQ_STREAMS_VERSION=""
     ${KUBE_COMMAND} wait --for=jsonpath="{.status.state}='AtLatestVersion'" subscription amq-streams -n openshift-operators >&2 > /dev/null
@@ -43,16 +45,16 @@ installPrerequisites() {
   else
     echo "upstream"
   fi
+
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/base/"
-#  if [[ ${OPERATORS} == "Red_Hat" ]]; then
-    if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry -n apicurio ; then
-      local REGISTRY_URL=""
-      REGISTRY_URL=$(oc get ApicurioRegistry kafkasql-registry -n apicurio -o=jsonpath='{.spec.deployment.host}')
-      echo -e "${GREEN}Apicurio Registry is accesable as ${REGISTRY_URL} ${NO_COLOUR}"
-    else
-      echo -e "${RED}Apicurio Registry does not have a deployment host ${NO_COLOUR}"
-    fi
-#  fi
+
+  if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry -n apicurio ; then
+    local REGISTRY_URL=""
+    REGISTRY_URL=$(oc get ApicurioRegistry kafkasql-registry -n apicurio -o=jsonpath='{.spec.deployment.host}')
+    echo -e "${GREEN}Apicurio Registry is accesable as ${REGISTRY_URL} ${NO_COLOUR}"
+  else
+    echo -e "${RED}Apicurio Registry does not have a deployment host ${NO_COLOUR}"
+  fi
 }
 
 installFlink() {
