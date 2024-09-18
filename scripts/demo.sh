@@ -48,6 +48,7 @@ installPrerequisites() {
     echo "wait for Strimzi to be ready"
   fi
 
+  echo -e "${BLUE}Configuring resources${NO_COLOUR}"
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/supporting-infrastructure/base/"
 
   if ${KUBE_COMMAND} wait --for=condition=Ready ApicurioRegistry kafkasql-registry -n apicurio ; then
@@ -66,6 +67,7 @@ installFlink() {
 }
 
 installDemoApp() {
+  oc create configmap product-inventory --from-file kubernetes-samples/recommendations-demo/base/productInventory.csv -n flink
   ${KUBE_COMMAND} apply -k "${EXAMPLES_DIR}/kubernetes-samples/recommendations-demo/base"
 }
 
