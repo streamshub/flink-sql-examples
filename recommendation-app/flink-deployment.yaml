@@ -6,6 +6,13 @@ spec:
   image: quay.io/streamshub/flink-sql-runner:latest
   flinkVersion: v1_19
   flinkConfiguration:
+    execution.checkpointing.interval: "60000"
+    execution.checkpointing.snapshot-compression: "true"
+    kubernetes.operator.job.restart.failed: "true"
+    state.backend.rocksdb.compression.per.level_FLINK_JIRA: SNAPPY_COMPRESSION
+    state.backend.type: rocksdb
+    state.checkpoints.dir: file:///flink-state-store/checkpoints
+    state.savepoints.dir: file:///flink-state-store/savepoints
     taskmanager.numberOfTaskSlots: "1"
   serviceAccount: flink
   podTemplate:
@@ -24,6 +31,8 @@ spec:
               name: flink-logs
             - mountPath: /opt/flink/artifacts
               name: flink-artifacts
+            - mountPath: /flink-state-store
+              name: flink-state-store
       volumes:
         - name: product-inventory-vol
           configMap:
@@ -35,6 +44,9 @@ spec:
           name: flink-logs
         - emptyDir: {}
           name: flink-artifacts
+        - name: flink-state-store
+          persistentVolumeClaim:
+            claimName: recommendation-pvc
   jobManager:
     resource:
       memory: "2048m"
