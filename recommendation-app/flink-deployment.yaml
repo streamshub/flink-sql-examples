@@ -21,6 +21,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 9249
+              name: prom
           volumeMounts:
             - name: product-inventory-vol
               mountPath: /opt/flink/data
