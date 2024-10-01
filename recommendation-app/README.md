@@ -57,24 +57,6 @@ The steps in the [README.md](../README.md) required to be completed for setting 
    ```
 The expected format of the result is `userId`, `comma separated 6 product ids` and `timestamp` of the window.
 
-You can also deploy Prometheus to monitor the metrics inside job manager and task manager.
-5. Update the prometheus configuration with the ip address of flink pods to scrape from:
-   ```
-   sed -i s/JOB_MANAGER/$(kubectl get pods -lapp=recommendation-app -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f1)/g recommendation-app/prometheus-install/prometheus-config.yaml
-   sed -i s/TASK_MANAGER/$(kubectl get pods -lapp=recommendation-app -o=jsonpath="{range .items[*]}{.status.podIP}{','}{end}" | cut -d ',' -f2)/g recommendation-app/prometheus-install/prometheus-config.yaml
-   ```
-
-6. Install prometheus, configuration, and service:
-   ```
-   kubectl apply -f recommendation-app/prometheus-install -n flink
-   ```
-
-7. Expose the prometheus UI with port-forward rule:
-   ```
-   kubectl port-forward svc/prometheus-service 9090
-   ```
-8. Now you can monitor the metrics in job manager or task manager via the prometheus UI is accessible at localhost:9090.
-![img.png](prometheus-install/job_metric.png)
-![img.png](prometheus-install/task_metric.png)
+6. You can also deploy Prometheus to monitor the metrics inside job manager and task manager following steps [here](../prometheus-install/README.md).
 
        
