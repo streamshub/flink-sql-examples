@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: prometheus
-          image: prom/prometheus
+          image: quay.io/prometheus/prometheus
           ports:
             - containerPort: 9090
           volumeMounts:
