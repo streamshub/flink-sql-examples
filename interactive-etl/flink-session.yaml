@@ -1,0 +1,45 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: session-cluster
+spec:
+  image: quay.io/streamshub/flink-sql-runner:latest
+  flinkVersion: v1_19
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+  serviceAccount: flink
+  podTemplate:
+    kind: Pod
+    metadata:
+      name: recommendation-app
+    spec:
+      containers:
+        - name: flink-main-container
+          image: quay.io/streamshub/flink-sql-runner:latest
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: product-inventory-vol
+              mountPath: /opt/flink/data
+            - mountPath: /opt/flink/log
+              name: flink-logs
+            - mountPath: /opt/flink/artifacts
+              name: flink-artifacts
+      volumes:
+        - name: product-inventory-vol
+          configMap:
+            name: product-inventory
+            items:
+              - key: productInventory.csv
+                path: productInventory.csv
+        - emptyDir: {}
+          name: flink-logs
+        - emptyDir: {}
+          name: flink-artifacts
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 2
