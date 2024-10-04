@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flink-metrics
+  labels:
+    app: flink-monitor
+spec:
+  selector:
+    matchLabels:
+      app: recommendation-app
+  namespaceSelector:
+    matchNames:
+      - flink
+  podMetricsEndpoints:
+  - path: /metrics
+    port: prom
+    interval: 10s
+  

@@ -7,6 +7,8 @@ spec:
   flinkVersion: v1_19
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
+    metrics.reporters: prom
+    metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
   serviceAccount: flink
   podTemplate:
     kind: Pod
@@ -17,6 +19,9 @@ spec:
         - name: flink-main-container
           image: quay.io/streamshub/flink-sql-runner:latest
           imagePullPolicy: Always
+          ports:
+            - containerPort: 9249
+              name: prom
           volumeMounts:
             - name: product-inventory-vol
               mountPath: /opt/flink/data

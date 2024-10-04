@@ -57,4 +57,6 @@ The steps in the [README.md](../README.md) required to be completed for setting 
    ```
 The expected format of the result is `userId`, `comma separated 6 product ids` and `timestamp` of the window.
 
+6. You can also deploy Prometheus to monitor the metrics inside job manager and task manager following steps [here](../prometheus-install/README.md).
+
        
