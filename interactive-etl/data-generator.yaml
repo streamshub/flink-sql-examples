@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: recommendation-app-data
+  name: interactive-etl-app-data
   labels:
-    app: recommendation-app-data
+    app: interactive-etl-app-data
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: recommendation-app-data
+      app: interactive-etl-app-data
   template:
     metadata:
       labels:
-        app: recommendation-app-data
+        app: interactive-etl-app-data
     spec:
       containers:
         - name: data-generator
