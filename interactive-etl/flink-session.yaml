@@ -8,25 +8,6 @@ spec:
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
   serviceAccount: flink
-  podTemplate:
-    kind: Pod
-    metadata:
-      name: interactive-etl-session
-    spec:
-      containers:
-        - name: flink-main-container
-          image: quay.io/streamshub/flink-sql-runner:latest
-          imagePullPolicy: Always
-          volumeMounts:
-            - mountPath: /opt/flink/log
-              name: flink-logs
-            - mountPath: /opt/flink/artifacts
-              name: flink-artifacts
-      volumes:
-        - emptyDir: {}
-          name: flink-logs
-        - emptyDir: {}
-          name: flink-artifacts
   jobManager:
     resource:
       memory: "2048m"

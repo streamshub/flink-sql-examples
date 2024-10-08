@@ -30,7 +30,12 @@ In order to run this example you will need:
     This script will create a Kafka cluster (using [Strimzi](http://strimzi.io)), installs the [Apicurio schema registry](https://www.apicur.io/registry/) and sets up a [Flink session cluster](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments) (used for long running, multi-purpose deployments) using the [Flink Kubernetes Operator](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/). 
     It will then start the data-generator application to populate topics within the Kafka cluster.
 
-    _Note_: The script assumes you are running against a minikube cluster where you have full access. You can run it against any other Kubernetes cluster but you will need to have the appropriate permissions to install the operator CRDs etc (see the script for more details of what is installed).
+    _Note_: 
+    - The script assumes you are running against a minikube cluster where you have full access. You can run it against any other Kubernetes cluster but you will need to have the appropriate permissions to install the operator CRDs etc (see the script for more details of what is installed).
+    - You can change the kubernetes client command (for example to use `oc` instead of `kubectl`) by setting the `KUBE_CMD` env var:
+      ```shell
+      KUBE_CMD=oc ./setup.sh
+      ```
 
 3. You can verify that the test data is flowing correctly by querying the Kafka topics using the console consumer:
 
@@ -39,7 +44,7 @@ In order to run this example you will need:
     ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic flink.sales.records
     ```
 
-    Running the commands above should show messages flowing after a few seconds.
+    Running the command above should show messages flowing after a few seconds.
 
 ## Interactive SQL client
 
@@ -70,7 +75,7 @@ If you use docker, you should be able to replace `podman` with `docker` in the c
 
 ## Tutorial
 
-This tutorial will walk through some basic data exploration and ETL (extract transform load) queries, using Flink SQL.
+This tutorial will walk through some basic data exploration and ETL (Extract Transform Load) queries, using Flink SQL.
 The [Flink SQL documentation](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/sql/queries/overview/) contains detailed breakdowns of the various SQL commands and query functions available.
 
 ### Source Data Table
@@ -235,7 +240,7 @@ WHERE
     quantity >= 3 AND unit_cost_gbp > 500;
 ```
 
-### Loading back to Kafka
+### Persisting back to Kafka
 
 But what if we are going to be running a lot of queries using the properly formatted cost? 
 What if we don't want to have to create the view every session? 
@@ -305,8 +310,6 @@ You can check if the job is actually running using `SHOW JOBS;`:
 | 2a8c1677c64854482f22ca96295eec65 | CleanedSalesRecordTable |  RUNNING | 2024-10-04T14:02:45.643 |
 +----------------------------------+-------------------------+----------+-------------------------+
 ```
-
-Or you can look at the Flink UI (which you port-forwarded above) on `localhost:8081`.
 
 Once you know that is running you can see the cleaned data in Kafka by querying the new output topic:
 
