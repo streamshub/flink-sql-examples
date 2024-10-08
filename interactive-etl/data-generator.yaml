@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interactive-etl-app-data
+  labels:
+    app: interactive-etl-app-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: interactive-etl-app-data
+  template:
+    metadata:
+      labels:
+        app: interactive-etl-app-data
+    spec:
+      containers:
+        - name: data-generator
+          image: quay.io/streamshub/flink-examples-data-generator:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "my-cluster-kafka-bootstrap.flink.svc:9092"
+            - name: DATA
+              value: "clickStream,sales"
+            - name: USE_APICURIO_REGISTRY
+              value: "true"
+            - name: REGISTRY_URL
+              value: "http://apicurio-registry-service.flink.svc:8080/apis/registry/v2"

@@ -24,3 +24,7 @@ hs_err_pid*
 replay_pid*
 target
 dependency-reduced-pom.xml
+
+# IDEs
+.idea/*
+.vscode/*
