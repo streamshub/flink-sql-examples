@@ -6,6 +6,7 @@ set -o errexit
 
 NAMESPACE=${1:-flink}
 KUBE_CMD=${KUBE_CMD:-kubectl}
+TIMEOUT=${TIMEOUT:-120}
 
 printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" ${NAMESPACE}
 
@@ -24,13 +25,13 @@ helm repo add flink-operator-repo https://dist.apache.org/repos/dist/dev/flink/f
 
 printf "\n\e[32mChecking for %s namespace\e[0m\n" ${NAMESPACE}
 if ${KUBE_CMD} get namespace ${NAMESPACE} ; then
-    echo "\e[32m$NAMESPACE namespace already exists\e[0m"
+    printf "\n\e[32m$NAMESPACE namespace already exists\e[0m\n"
 else
     ${KUBE_CMD} create namespace ${NAMESPACE}
 fi
 
 printf "\n\e[32mWaiting for cert-manager webhook to be ready...\e[0m"
-${KUBE_CMD} -n cert-manager wait --for=condition=Available --timeout=120s deployment cert-manager-webhook
+${KUBE_CMD} -n cert-manager wait --for=condition=Available --timeout=${TIMEOUT}s deployment cert-manager-webhook
 
 printf "\n\e[32mChecking for Flink Operator install\e[0m\n"
 if ${KUBE_CMD} -n ${NAMESPACE} get deployment flink-kubernetes-operator ; then
@@ -52,19 +53,19 @@ printf "\n\e[32mCreating Kafka cluster\e[0m\n"
 ${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kraft/kafka-single-node.yaml -n ${NAMESPACE}
 
 printf "\n\e[32mWaiting for Kafka to be ready...\e[0m\n"
-${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Ready --timeout=120s kafka my-cluster
+${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Ready --timeout=${TIMEOUT}s kafka my-cluster
 
 printf "\n\e[32mInstalling Apicurio Registry\e[0m\n"
 ${KUBE_CMD} apply -f https://raw.githubusercontent.com/streamshub/flink-sql-examples/refs/heads/main/apicurio-registry.yaml -n ${NAMESPACE}
 
 printf "\n\e[32mWaiting for Apicurio to be ready...\e[0m\n"
-${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Available --timeout=120s deployment apicurio-registry
+${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Available --timeout=${TIMEOUT}s deployment apicurio-registry
 
 printf "\n\e[32mDeploying data generation application...\e[0m\n"
 ${KUBE_CMD} -n ${NAMESPACE} apply -f data-generator.yaml
 
 printf "\n\e[32mWaiting for Flink operator to be ready...\e[0m\n"
-${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Available --timeout=180s deployment flink-kubernetes-operator
+${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Available --timeout=${TIMEOUT}s deployment flink-kubernetes-operator
 
 printf "\n\e[32mCreating flink session cluster...\e[0m\n"
 ${KUBE_CMD} -n ${NAMESPACE} apply -f flink-session.yaml
