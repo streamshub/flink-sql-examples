@@ -27,8 +27,6 @@ spec:
               mountPath: /opt/flink/data
             - mountPath: /opt/flink/log
               name: flink-logs
-            - mountPath: /opt/flink/artifacts
-              name: flink-artifacts
       volumes:
         - name: product-inventory-vol
           configMap:
@@ -38,8 +36,6 @@ spec:
                 path: productInventory.csv
         - emptyDir: {}
           name: flink-logs
-        - emptyDir: {}
-          name: flink-artifacts
   jobManager:
     resource:
       memory: "2048m"
