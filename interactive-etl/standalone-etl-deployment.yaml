@@ -20,13 +20,9 @@ spec:
           volumeMounts:
             - mountPath: /opt/flink/log
               name: flink-logs
-            - mountPath: /opt/flink/artifacts
-              name: flink-artifacts
       volumes:
         - emptyDir: {}
           name: flink-logs
-        - emptyDir: {}
-          name: flink-artifacts
   jobManager:
     resource:
       memory: "2048m"
