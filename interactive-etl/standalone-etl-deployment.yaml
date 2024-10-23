@@ -8,20 +8,6 @@ spec:
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
   serviceAccount: flink
-  podTemplate:
-    kind: Pod
-    metadata:
-      name: standalone-etl
-    spec:
-      containers:
-        - name: flink-main-container
-          imagePullPolicy: Always
-          volumeMounts:
-            - mountPath: /opt/flink/log
-              name: flink-logs
-      volumes:
-        - emptyDir: {}
-          name: flink-logs
   jobManager:
     resource:
       memory: "2048m"
