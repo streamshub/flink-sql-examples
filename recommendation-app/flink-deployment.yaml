@@ -24,8 +24,6 @@ spec:
           volumeMounts:
             - name: product-inventory-vol
               mountPath: /opt/flink/data
-            - mountPath: /opt/flink/log
-              name: flink-logs
       volumes:
         - name: product-inventory-vol
           configMap:
