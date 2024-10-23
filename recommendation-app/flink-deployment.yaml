@@ -31,8 +31,6 @@ spec:
             items:
               - key: productInventory.csv
                 path: productInventory.csv
-        - emptyDir: {}
-          name: flink-logs
   jobManager:
     resource:
       memory: "2048m"
