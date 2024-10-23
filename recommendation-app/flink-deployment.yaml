@@ -17,7 +17,6 @@ spec:
     spec:
       containers:
         - name: flink-main-container
-          image: quay.io/streamshub/flink-sql-runner:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 9249
