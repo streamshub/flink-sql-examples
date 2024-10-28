@@ -6,7 +6,8 @@ set -o errexit
 
 NAMESPACE=${1:-flink}
 KUBE_CMD=${KUBE_CMD:-kubectl}
-TIMEOUT=${TIMEOUT:-120}
+TIMEOUT=${TIMEOUT:-180}
+FLINK_OPERATOR_VERSION="1.10.0"
 
 printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" ${NAMESPACE}
 
@@ -18,10 +19,15 @@ else
     ${KUBE_CMD} create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
 fi
 
-printf "\n\n\e[32mInstalling the Flink operator helm repo\e[0m\n"
 
 # Add the Flink operator's helm repo
-helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
+printf "\n\e[32mChecking for Flink Operator ${FLINK_OPERATOR_VERSION} helm repo\e[0m\n" 
+if helm repo list | grep "flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}" ; then
+    printf "\e[32mFlink Operator ${FLINK_OPERATOR_VERSION} helm repo already exists\e[0m\n"
+else
+    printf "\e[32mInstalling the Flink Operator ${FLINK_OPERATOR_VERSION} helm repo\e[0m\n"
+    helm repo add --force-update flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}/
+fi
 
 printf "\n\e[32mChecking for %s namespace\e[0m\n" ${NAMESPACE}
 if ${KUBE_CMD} get namespace ${NAMESPACE} ; then
