@@ -58,9 +58,9 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
    kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.15.2/cert-manager.yaml
    kubectl wait deployment --all  --for=condition=Available=True --timeout=300s -n cert-manager
    ```
-6. Deploy Flink Kubernetes Operator 1.9.0 (the latest stable version):
+6. Deploy Flink Kubernetes Operator 1.10.0 (the latest stable version):
    ```
-   helm repo add flink-operator-repo https://dist.apache.org/repos/dist/dev/flink/flink-kubernetes-operator-1.10.0-rc1/
+   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n flink
    ```
 
