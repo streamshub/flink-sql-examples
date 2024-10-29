@@ -21,7 +21,7 @@ fi
 printf "\n\n\e[32mInstalling the Flink operator helm repo\e[0m\n"
 
 # Add the Flink operator's helm repo
-helm repo add flink-operator-repo https://dist.apache.org/repos/dist/dev/flink/flink-kubernetes-operator-1.10.0-rc1/
+helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
 
 printf "\n\e[32mChecking for %s namespace\e[0m\n" ${NAMESPACE}
 if ${KUBE_CMD} get namespace ${NAMESPACE} ; then
