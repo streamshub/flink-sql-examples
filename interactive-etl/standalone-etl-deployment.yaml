@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: standalone-etl
 spec:
-  image: quay.io/streamshub/flink-sql-runner:latest
+  image: quay.io/streamshub/flink-sql-runner:v0.0.1
   flinkVersion: v1_19
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"

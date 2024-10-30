@@ -68,7 +68,7 @@ The interactive SQL client also need access to these plugin libraries, you could
 However, you can run the Flink SQL Runner container locally using the command below (make sure to add the `--net=host` flag so the container can see the forwarded job-manager port):
 
 ```shell
-podman run -it --rm --net=host quay.io/streamshub/flink-sql-runner:latest /opt/flink/bin/sql-client.sh embedded
+podman run -it --rm --net=host quay.io/streamshub/flink-sql-runner:v0.0.1 /opt/flink/bin/sql-client.sh embedded
 ```
 
 If you use docker, you should be able to replace `podman` with `docker` in the command above.
