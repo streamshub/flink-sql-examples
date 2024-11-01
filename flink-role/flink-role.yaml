@@ -19,12 +19,14 @@ rules:
     resources:
       - pods
       - configmaps
+      - secrets
     verbs:
       - '*'
   - apiGroups:
       - apps
     resources:
       - deployments
+      - deployments/finalizers
     verbs:
       - '*'
 ---
