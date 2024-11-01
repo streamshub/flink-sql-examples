@@ -69,6 +69,13 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
 The steps to run each example are described in their own README.
 Make sure you have already [installed Apache Kafka, Apache Flink and Apicurio Registry](#installing-apache-kafka-apache-flink-and-apicurio-registry).
 
+### Running an example in other namespace
+
+By default, we assume all the jobs are running in `flink` namespace, but it is also possible to run jobs in other namespaces.
+Please see [here](flink-role/README.md) for more information.
+
+### Viewing the Apicurio Registry UI
+
 The source topics for the example will contain Avro records.
 You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-service 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
 
