@@ -57,6 +57,14 @@ jobs:
         with:
           images: |
             ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-examples-data-generator
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
 
       - name: Build and Push Image
         if: github.event_name == 'push'
