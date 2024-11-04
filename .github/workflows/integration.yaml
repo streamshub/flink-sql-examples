@@ -3,6 +3,7 @@ name: Build
 on:
   push:
     branches: [ "main" ]
+    tags: [ '*' ]
   pull_request:
     types: [ opened, synchronize, reopened ]
 
@@ -39,7 +40,7 @@ jobs:
           registry: "${{ secrets.IMAGE_REPO_HOSTNAME }}"
           username: "${{ secrets.IMAGE_REPO_USERNAME }}"
           password: "${{ secrets.IMAGE_REPO_PASSWORD }}"
-
+      
       - name: Build Image
         if: github.ref_name != 'main'
         uses: docker/build-push-action@v6
@@ -49,6 +50,14 @@ jobs:
           push: false
           file: data-generator/Dockerfile
 
+      - name: Image metadata
+        if: github.event_name == 'push' && github.ref_name == 'main'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-examples-data-generator
+
       - name: Build and Push Image
         if: github.event_name == 'push' && github.ref_name == 'main'
         uses: docker/build-push-action@v6
@@ -57,4 +66,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           file: data-generator/Dockerfile
-          tags: ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-examples-data-generator:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
