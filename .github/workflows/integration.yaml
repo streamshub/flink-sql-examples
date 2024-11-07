@@ -3,6 +3,7 @@ name: Build
 on:
   push:
     branches: [ "main", "releases/**" ]
+    tags: ["v*"]
   pull_request:
     types: [ opened, synchronize, reopened ]
 
