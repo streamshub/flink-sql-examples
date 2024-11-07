@@ -86,3 +86,7 @@ In the `<EXAMPLE_DIRECTORY>/data-generator.yaml` file change the `USE_APICURIO_R
 In the SQL statements supplied in the `args` in the `<EXAMPLE_DIRECTORY>/flink-deployment.yaml`, switch to using CSV:
   - Change `'value.format' = 'avro-confluent'` to `'format' = 'csv'`.
   - Remove `value.avro-confluent.schema-registry.url`.
+
+# Releasing
+
+See [RELEASING.md](RELEASING.md) for instructions on how to release.
