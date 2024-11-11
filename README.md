@@ -61,8 +61,15 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
 6. Deploy Flink Kubernetes Operator 1.10.0 (the latest stable version):
    ```
    helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
-   helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n flink
+   helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
+   --set podSecurityContext=null \
+   --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
+   --set defaultConfiguration."log4j-console\.properties"=monitorInterval\=30 \
+   -n flink
    ```
+   Note:<br>
+   (1) Set `podSecurityContext` to null so that we can run in OpenShift environment<br>
+   (2) Set `monitorInterval` to log4j properties file so that we can dynamically change log level for operator and job/task manager.
 
 ### Running an example
 
@@ -78,6 +85,14 @@ Please see [here](flink-role/README.md) for more information.
 
 The source topics for the example will contain Avro records.
 You can view the Apicurio Registry UI by running `kubectl port-forward service/apicurio-registry-service 8080 -n flink` and visiting http://localhost:8080/ui in a browser.
+
+### Changing log level dynamically
+
+Since the `monitorInterval` has been set via `helm install` command above, we can change the log level via updating/patching
+the config map directly. To change the operator log level, run `kubectl edit cm flink-operator-config -n flink` and update
+the `log4j-operator.properties` section. To change the job/task manager log level, find the config map for the application and edit it.
+For example: run `kubectl edit cm flink-config-recommendation-app -n flink` for recommendation-app example and
+update the `log4j-console.properties` section.
 
 # Running the data-generator without a schema registry
 
