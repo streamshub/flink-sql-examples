@@ -19,19 +19,19 @@ The repository must have a `RELEASE_PAT` secret containing a non-expired GitHub 
 
 ## To Release a Branch that is in Development
 
-1. Run the [Create Release Transition PR workflow](https://github.com/streams/flink-sql-examples/actions/workflows/release-transition.yaml) setting:
+1. Run the [Create Release Transition PR workflow](https://github.com/streamshub/flink-sql-examples/actions/workflows/release-transition.yaml) setting:
   - Branch to transition: the branch you want to release (typically main)
   - New Version: if your development branch is on 0.0.1-SNAPSHOT in the maven projects, you would set this to 0.0.1
   - Choose: `DEVELOPMENT_TO_RELEASE`
 2. This will create a PR. After CI has run against this PR, review, approve and merge it.
 3. Fetch the branch changes locally and tag the merge commit as `v${version}`. So if you are releasing 0.0.1, run `git tag -a v0.0.1 -m v0.0.1` and push the tag up.
-4. This tag push will trigger [integration.yaml](https://github.com/streams/flink-sql-examples/actions/workflows/integration.yaml) to push a v0.0.1 tagged image to quay.io,
+4. This tag push will trigger [integration.yaml](https://github.com/streamshub/flink-sql-examples/actions/workflows/integration.yaml) to push a v0.0.1 tagged image to quay.io,
   matching the references in the deployment YAML that were set in the transition PR.
 5. After the automation pushes the image to quay, you should be able to execute the examples successfully.
 
 ## To Transition a Branch back to Development after Release
 
-1. Run the [Create Release Transition PR workflow](https://github.com/streams/flink-sql-examples/actions/workflows/release-transition.yaml) setting:
+1. Run the [Create Release Transition PR workflow](https://github.com/streamshub/flink-sql-examples/actions/workflows/release-transition.yaml) setting:
   - Branch to transition: the branch you want to release (typically main)
   - New Version: the next development version, so if you released 0.0.1 this might now be 0.1.0-SNAPSHOT
   - Choose: `RELEASE_TO_DEVELOPMENT`
