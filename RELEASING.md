@@ -4,7 +4,7 @@ Currently the only external artefact for a release is the data generator image i
 
 The automation builds and pushes images to quay on push to:
 1. main (image will be tagged as main eg quay.io/streamshub/flink-examples-data-generator:main )
-2. branches named releases/** (image will be tagged as branch name eg quay.io/streamshub/flink-examples-data-generator:releases/0.0)
+2. branches named release-** (image will be tagged as branch name, for example branch release-0.0 -> quay.io/streamshub/flink-examples-data-generator:release-0.0)
 3. semver-like tag push (image will be tagged with the git tag, for example git tag 0.0.1 -> quay.io/streamshub/flink-examples-data-generator:0.0.1)
 
 For the branches targeted above we can use github Actions to transition them between two states:
@@ -41,8 +41,8 @@ The repository must have a `RELEASE_TOKEN` secret containing a non-expired GitHu
 
 If we ever needed to release an older version for some reason (like we wanted to put out a bugfixed 0.0.2 but main has moved far ahead)
 
-1. Branch off the tag you want to work from, the release branch name must start with `releases/`, so if I want to add a bugfix to 0.0.1 I might
-  execute `git checkout -b releases/0.0 0.0.1 && git push releases/0.0`
-2. Transition the new `releases/0.0` branch to Development following the process above,  setting the branch to `releases/0.0` in the action
+1. Branch off the tag you want to work from, the release branch name must start with `release-`, so if I want to add a bugfix to 0.0.1 I might
+  execute `git checkout -b release-0.0 0.0.1 && git push release-0.0`
+2. Transition the new `release-0.0` branch to Development following the process above,  setting the branch to `release-0.0` in the action
 3. Make code changes
-4. Release the branch following the process above, setting the branch to `releases/0.0` in the action
+4. Release the branch following the process above, setting the branch to `release-0.0` in the action
