@@ -58,7 +58,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           # use token so that the created PR will trigger other actions, default GITHUB_TOKEN does not do this
-          token: ${{ secrets.RELEASE_PAT }}
+          token: ${{ secrets.RELEASE_TOKEN }}
           commit-message: "Update to ${{ github.event.inputs.newVersion }}"
           branch: "release-transition-${{ github.event.inputs.branch }}-${{ github.event.inputs.newVersion }}"
           signoff: true

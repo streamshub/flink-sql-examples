@@ -15,7 +15,7 @@ For the branches targeted above we can use github Actions to transition them bet
 ## Prerequisites
 You must have permissions to execute manual GitHub Actions workflows and the ability to push tags to this repository
 
-The repository must have a `RELEASE_PAT` secret containing a non-expired GitHub Personal Access Token with write permissions for this repositories contents and PRs.
+The repository must have a `RELEASE_TOKEN` secret containing a non-expired GitHub Personal Access Token with write permissions for this repositories contents and PRs.
 
 ## To Release a Branch that is in Development
 
