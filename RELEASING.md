@@ -5,7 +5,7 @@ Currently the only external artefact for a release is the data generator image i
 The automation builds and pushes images to quay on push to:
 1. main (image will be tagged as main eg quay.io/streamshub/flink-examples-data-generator:main )
 2. branches named releases/** (image will be tagged as branch name eg quay.io/streamshub/flink-examples-data-generator:releases/0.0)
-3. tag push (image will be tagged with the git tag, for example git tag v0.0.1 -> quay.io/streamshub/flink-examples-data-generator:releases/v0.0.1)
+3. tag push (image will be tagged with the git tag, for example git tag v0.0.1 -> quay.io/streamshub/flink-examples-data-generator:v0.0.1)
 
 For the branches targeted above we can use github Actions to transition them between two states:
 
