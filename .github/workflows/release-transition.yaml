@@ -34,7 +34,7 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.transition }}" == "DEVELOPMENT_TO_RELEASE" ]]; then
             # integration.yaml will push up a matching image tag after Releaser pushes up the v${newVersion} tag
-            IMAGE_TAG="v${{ github.event.inputs.newVersion }}"
+            IMAGE_TAG="${{ github.event.inputs.newVersion }}"
           else
             # integration.yaml will push images to quay tagged with the branch name on push to branch
             IMAGE_TAG="${{ github.event.inputs.branch }}"
