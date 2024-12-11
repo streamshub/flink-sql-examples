@@ -34,7 +34,7 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.transition }}" == "DEVELOPMENT_TO_RELEASE" ]]; then
             # integration.yaml will push up a matching image tag after Releaser pushes up the v${newVersion} tag
-            IMAGE_TAG="v${{ github.event.inputs.newVersion }}"
+            IMAGE_TAG="${{ github.event.inputs.newVersion }}"
           else
             # integration.yaml will push images to quay tagged with the branch name on push to branch
             IMAGE_TAG="${{ github.event.inputs.branch }}"
@@ -58,9 +58,9 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           # use token so that the created PR will trigger other actions, default GITHUB_TOKEN does not do this
-          token: ${{ secrets.RELEASE_PAT }}
+          token: ${{ secrets.RELEASE_TOKEN }}
           commit-message: "Update to ${{ github.event.inputs.newVersion }}"
-          branch: "release-transition-${{ github.event.inputs.branch }}-${{ github.event.inputs.newVersion }}"
+          branch: "transition-${{ github.event.inputs.branch }}-${{ github.event.inputs.newVersion }}"
           signoff: true
           title: "Release Transition ${{ github.event.inputs.branch }} from ${{ github.event.inputs.transition }}: ${{github.event.inputs.newVersion}}"
           body: "Release Transition ${{ github.event.inputs.branch }} from ${{ github.event.inputs.transition }}: ${{github.event.inputs.newVersion}}"
