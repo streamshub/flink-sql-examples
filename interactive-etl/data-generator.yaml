@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: data-generator
-          image: quay.io/streamshub/flink-examples-data-generator:main
+          image: quay.io/streamshub/flink-examples-data-generator:0.0.1
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "my-cluster-kafka-bootstrap.flink.svc:9092"
