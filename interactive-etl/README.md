@@ -1,6 +1,6 @@
 # Interactive ETL using Flink SQL
 
-[Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/overview/) is a powerful tool for data exploration, manipulation and inter-connection.
+[Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/overview/) is a powerful tool for data exploration, manipulation and inter-connection.
 It allows you to access the power of Flink's distributed stream processing abilities with a familar interface. 
 In this tutorial we go over a simple introduction to using Flink SQL to read from a Kafka topic, perform basic queries, transform and clean data and then load that back into Kafka.
 
@@ -48,7 +48,7 @@ In order to run this example you will need:
 
 ## Interactive SQL client
 
-The Flink distribution comes with an interactive SQL command line tool ([`sql-client.sh`](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/sqlclient/)) which allows you to submit SQL queries to a running Flink cluster. 
+The Flink distribution comes with an interactive SQL command line tool ([`sql-client.sh`](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/sqlclient/)) which allows you to submit SQL queries to a running Flink cluster. 
 The `setup.sh` script you ran above, creates a long-running session cluster inside minikube which we can use for this purpose.
 
 In order to access the cluster we need to allow access, from your local machine, to the job manager container running inside the minikube cluster:
@@ -68,7 +68,7 @@ The interactive SQL client also need access to these plugin libraries, you could
 However, you can run the Flink SQL Runner container locally using the command below (make sure to add the `--net=host` flag so the container can see the forwarded job-manager port):
 
 ```shell
-podman run -it --rm --net=host quay.io/streamshub/flink-sql-runner:v0.0.1 /opt/flink/bin/sql-client.sh embedded
+podman run -it --rm --net=host quay.io/streamshub/flink-sql-runner:0.1.0 /opt/flink/bin/sql-client.sh embedded
 ```
 
 If you use docker, you should be able to replace `podman` with `docker` in the command above.
@@ -76,7 +76,7 @@ If you use docker, you should be able to replace `podman` with `docker` in the c
 ## Tutorial
 
 This tutorial will walk through some basic data exploration and ETL (Extract Transform Load) queries, using Flink SQL.
-The [Flink SQL documentation](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/sql/queries/overview/) contains detailed breakdowns of the various SQL commands and query functions available.
+The [Flink SQL documentation](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/sql/queries/overview/) contains detailed breakdowns of the various SQL commands and query functions available.
 
 ### Source Data Table
 
@@ -120,9 +120,9 @@ CREATE TABLE SalesRecordTable (
 ); 
 ```
 
-The [`CREATE`](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/sql/create/) statement will set up a table with the defined fields within the Flink SQL client. 
+The [`CREATE`](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/sql/create/) statement will set up a table with the defined fields within the Flink SQL client. 
 Keep in mind that nothing has actually been sent to the Flink cluster at this point, we have just setup where data will go once we run a query.
-The [`WITH`](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/sql/queries/with/) clause allows us to pass required configuration to Flink to allow it to connect to external sources.
+The [`WITH`](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/sql/queries/with/) clause allows us to pass required configuration to Flink to allow it to connect to external sources.
 In the query above we are telling Flink to use the Kafka connector to pull data from the specified Kafka cluster and topic and also to talk to Apicurio to find the Apache Avro schema for the values in the messages of that topic.
 
 ### Querying Sales Data
@@ -187,7 +187,7 @@ But that would require a redeployment of the producing application and maybe a d
 
 All is not lost though, we can work around this formatting issue using Flink SQL.
 
-There are a large number of [built-in functions](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/functions/systemfunctions/) that you can call as part of your queries, including [string manipulation](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/functions/systemfunctions/#string-functions) and [type conversion](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/table/functions/systemfunctions/#type-conversion-functions).
+There are a large number of [built-in functions](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/functions/systemfunctions/) that you can call as part of your queries, including [string manipulation](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/functions/systemfunctions/#string-functions) and [type conversion](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/functions/systemfunctions/#type-conversion-functions).
 We can use those to convert the currency string as part of the query.
 
 In the query below, we add a sub-query that does the conversion of the original values and then select from the output of that:

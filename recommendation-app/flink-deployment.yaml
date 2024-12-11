@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image: quay.io/streamshub/flink-sql-runner:v0.0.1
+  image: quay.io/streamshub/flink-sql-runner:0.1.0
   flinkVersion: v1_19
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
