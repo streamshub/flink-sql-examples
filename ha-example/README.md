@@ -23,11 +23,7 @@ helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-oper
 --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
 --set defaultConfiguration."log4j-console\.properties"=monitorInterval\=30 \
 --set replicas=2 \
---set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.metrics.reporter.slf4j.factory.class\:\ org.apache.flink.metrics.slf4j.Slf4jReporterFactory
-kubernetes.operator.metrics.reporter.slf4j.interval\:\ 5\ MINUTE
-kubernetes.operator.reconcile.interval:\ 15\ s
-kubernetes.operator.observer.progress-check.interval:\ 5\ s
-kubernetes.operator.leader-election.enabled:\ true
+--set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.leader-election.enabled:\ true
 kubernetes.operator.leader-election.lease-name:\ flink-operator-lease" \
 -n flink
 ```
@@ -43,7 +39,7 @@ flink-kubernetes-operator-6cd86cc8-fmb2x      2/2     Running   0               
 flink-kubernetes-operator-6cd86cc8-g298v      2/2     Running   0                3h
 ```
 
-And when checking the `lease` resource, we can see hte holder(leader) operator's name.
+And when checking the `lease` resource, we can see the holder(leader) operator's name.
 ```
 kubectl get lease -n flink
 NAME                       HOLDER                                      AGE
@@ -60,15 +56,14 @@ For the Job Manager itself to recover consistently,
 an external service must store a minimal amount of recovery metadata (like “ID of last committed checkpoint”),
 as well as information needed to elect and lock which Job Manager is the leader (to avoid split-brain situations).
 
-In order to configure Job Managers in your Flink Cluster for high availability you need to add the following settings to the configuration in your `FlinkDeplyment` CR like this:
+In order to configure Job Managers in your Flink Cluster for high availability you need to add the following settings to the configuration in your `FlinkDeployment` CR like this:
 ```yaml
 apiVersion: flink.apache.org/v1beta1
 kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image: quay.io/streamshub/flink-sql-runner:v0.0.1
-  flinkVersion: v1_19
+  image: quay.io/streamshub/flink-sql-runner:latest
   flinkConfiguration:
     # job manager HA settings
     high-availability.type: KUBERNETES
@@ -79,16 +74,16 @@ spec:
 
 [Checkpointing](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/datastream/fault-tolerance/checkpointing/) is Flink’s primary fault-tolerance mechanism, wherein a snapshot of your job’s state is persisted periodically to some durable location.
 In the case of failure, of a Task running your job's code, Flink will restart the Task from the most recent checkpoint and resume processing.
-Although not strictly related to HA of the Flink cluster, it is important to enable check-pointing in production deployments to ensure fault tolerance.
-By default, the checkpointing is not enabled in Flink cluster, you can enable it by setting the checkpointing interval in the `FlinkDeplyment` CR like this:
+Although not strictly related to HA of the Flink cluster, it is important to enable checkpointing in production deployments to ensure fault tolerance.
+By default, the checkpointing is not enabled.
+You can enable it by setting the checkpointing interval in the `FlinkDeployment` CR like this:
 ```yaml
 apiVersion: flink.apache.org/v1beta1
 kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image: quay.io/streamshub/flink-sql-runner:v0.0.1
-  flinkVersion: v1_19
+  image: quay.io/streamshub/flink-sql-runner:latest
   flinkConfiguration:
     # job manager HA settings
     execution.checkpointing.interval: 1min
@@ -107,11 +102,7 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
    --set defaultConfiguration."log4j-console\.properties"=monitorInterval\=30 \
    --set replicas=2 \
-   --set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.metrics.reporter.slf4j.factory.class\:\ org.apache.flink.metrics.slf4j.Slf4jReporterFactory
-   kubernetes.operator.metrics.reporter.slf4j.interval\:\ 5\ MINUTE
-   kubernetes.operator.reconcile.interval:\ 15\ s
-   kubernetes.operator.observer.progress-check.interval:\ 5\ s
-   kubernetes.operator.leader-election.enabled:\ true
+   --set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.leader-election.enabled:\ true
    kubernetes.operator.leader-election.lease-name:\ flink-operator-lease" \
    -n flink
    ```
@@ -132,10 +123,11 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    recommendation-app-76b6854f98-9zb24   1/1     Running   0          3m59s
    recommendation-app-taskmanager-1-1    1/1     Running   0          2m5s
    ``` 
-6. Browse the minio console, to make sure the metadata of the job manager is uploaded to s3://test/ha 
+6. Browse the minio console, to make sure the metadata of the job manager is uploaded to `s3://test/ha` 
 7. Find out which job manager pod is the leader
 
-   Check the pod logs, if it's the standby job manager, the log will stay at these lines, and waiting for becoming the leader.
+   To do this, check the pod logs.
+   If a job manager is the standby, then the log will indicate that it is watching and waiting to becoming the leader.
    ```
    kubectl  logs -n flink recommendation-app-76b6854f98-4qcz4 --tail=2 -f
    2024-12-11 08:31:22,729 INFO  org.apache.flink.kubernetes.kubeclient.resources.KubernetesConfigMapSharedInformer [] - Starting to watch for flink/recommendation-app-cluster-config-map, watching id:3c7e23f2-fcaa-4f47-8623-fa1ebe9609ea
@@ -143,7 +135,7 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    ```
 8. Delete the leader pod of job manager, and monitor the logs of the standby pod
 
-   Keep the step(5) command running, and delete the leader pod in another terminal
+   Keep the step(7) command running, and delete the leader pod in another terminal
    ```
    kubectl  logs -n flink recommendation-app-76b6854f98-4qcz4 --tail=2 -f
    ...
@@ -153,9 +145,10 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    2024-12-11 08:50:16,524 INFO  org.apache.flink.runtime.resourcemanager.ResourceManagerServiceImpl [] - Resource manager service is granted leadership with session id 87a6a102-c77b-4ec2-b263-b20a60921c9e.
    ```
    You should see the leadership is changed to the other pod.
-9. Make sure the checkpointing file is successfully uploaded onto s3://test/cp via minio console 9Monitor the sink topic in kafka
+9. Make sure the checkpointing file is successfully uploaded to `s3://test/cp` via the minio console. 
+10. Monitor the sink topic in kafka
 
-10. Run the console consumer to get the result of sink topic:
+   Run the console consumer to get the result of sink topic:
    ```
    kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
    ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic flink.recommended.products --from-beginning
