@@ -1,9 +1,10 @@
+# Scraping for job managers/task managers
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: flink-metrics
+  name: flink-pod-monitor
   labels:
-    app: flink-monitor
+    app: flink-pod-monitor
 spec:
   selector:
     matchLabels:
