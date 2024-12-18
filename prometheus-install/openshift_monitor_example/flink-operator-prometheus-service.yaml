@@ -1,0 +1,15 @@
+# The service is created for serviceMonitor use, to open the prometheus port for scraping
+# The flink kubernetes operator cannot config custom container port like FlinkDeployment does, so this service is needed.
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-operator-prometheus-service
+  labels:
+    app: flink-operator-prometheus-service
+spec:
+  ports:
+    - port: 9249
+      targetPort: 9249
+      name: prom
+  selector:
+    app.kubernetes.io/name: flink-kubernetes-operator

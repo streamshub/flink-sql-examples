@@ -10,4 +10,4 @@ data:
     scrape_configs:
       - job_name: 'flink'
         static_configs:
-          - targets: ['JOB_MANAGER:9249', 'TASK_MANAGER:9249']
+          - targets: ['OPERATOR:9249', 'JOB_MANAGER:9249', 'TASK_MANAGER:9249']
