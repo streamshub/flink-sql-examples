@@ -65,11 +65,14 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
    --set podSecurityContext=null \
    --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
    --set defaultConfiguration."log4j-console\.properties"=monitorInterval\=30 \
+   --set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.metrics.reporter.prom.factory.class\:\ org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+    kubernetes.operator.metrics.reporter.prom.port\:\ 9249 " \
    -n flink
    ```
    Note:<br>
    (1) Set `podSecurityContext` to null so that we can run in OpenShift environment<br>
    (2) Set `monitorInterval` to log4j properties file so that we can dynamically change log level for operator and job/task manager.
+   (3) Set the metrics reporter as prometheus for [further integration](prometheus-install/README.md).
 
 ### Running an example
 
