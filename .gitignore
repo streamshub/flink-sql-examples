@@ -28,3 +28,6 @@ dependency-reduced-pom.xml
 # IDEs
 .idea/*
 .vscode/*
+
+# Rendered Docs
+*.html
