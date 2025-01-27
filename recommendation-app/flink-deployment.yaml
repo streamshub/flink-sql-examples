@@ -66,7 +66,8 @@ spec:
           'properties.group.id' = 'click-stream-group', 
           'value.format' = 'avro-confluent', 
           'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 
-          'scan.startup.mode' = 'latest-offset' ); 
+          'scan.startup.mode' = 'latest-offset'
+        ); 
         CREATE TABLE SalesRecordTable (
           invoice_id STRING, 
           user_id STRING, 
@@ -83,19 +84,6 @@ spec:
           'value.format' = 'avro-confluent', 
           'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 
           'scan.startup.mode' = 'latest-offset' 
-        ); 
-        CREATE TABLE CsvSinkTable ( 
-          user_id STRING, 
-          top_product_ids STRING, 
-          `event_time` TIMESTAMP(3), 
-          PRIMARY KEY(`user_id`) NOT ENFORCED 
-        ) WITH ( 
-          'connector' = 'upsert-kafka', 
-          'topic' = 'flink.recommended.products', 
-          'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
-          'properties.client.id' = 'recommended-products-producer-client', 
-          'properties.transaction.timeout.ms' = '800000', 'key.format' = 'csv', 
-          'value.format' = 'csv', 'value.fields-include' = 'ALL' 
         ); 
         CREATE TEMPORARY VIEW clicked_products AS 
           SELECT DISTINCT 
@@ -138,11 +126,26 @@ spec:
           ROW_NUMBER() OVER (PARTITION BY cp.user_id ORDER BY cp.purchased DESC, cp.rating DESC) AS rn 
           FROM category_products cp
         ; 
+        CREATE TABLE CsvSinkTable ( 
+          user_id STRING, 
+          top_product_ids STRING, 
+          `event_time` TIMESTAMP(3), 
+          PRIMARY KEY(`user_id`) NOT ENFORCED 
+        ) WITH ( 
+          'connector' = 'upsert-kafka', 
+          'topic' = 'flink.recommended.products', 
+          'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+          'properties.client.id' = 'recommended-products-producer-client', 
+          'properties.transaction.timeout.ms' = '800000', 
+          'key.format' = 'csv', 
+          'value.format' = 'csv', 
+          'value.fields-include' = 'ALL' 
+        ); 
         INSERT INTO CsvSinkTable 
           SELECT 
             user_id, 
             LISTAGG(product_id, ',') AS top_product_ids, 
-            TUMBLE_END(event_time, INTERVAL '5' SECOND) 
+            TUMBLE_END(event_time, INTERVAL '5' SECOND) as window_end_timestamp
           FROM top_products 
           WHERE rn <= 6 
           GROUP BY user_id, 
