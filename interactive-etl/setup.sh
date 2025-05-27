@@ -7,16 +7,17 @@ set -o errexit
 NAMESPACE=${1:-flink}
 KUBE_CMD=${KUBE_CMD:-kubectl}
 TIMEOUT=${TIMEOUT:-180}
-FLINK_OPERATOR_VERSION="1.10.0"
+FLINK_OPERATOR_VERSION="1.11.0"
+CERT_MANAGER_VERSION="1.17.2"
 
-printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" ${NAMESPACE}
+printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" "${NAMESPACE}"
 
 # Install CertManager - this is needed by the Flink Kubernetes Operator
 printf "\n\e[32mChecking for CertManager install\e[0m\n"
 if ${KUBE_CMD} get namespace cert-manager ; then
     printf "\e[32mCertManager is already installed\e[0m\n"
 else
-    ${KUBE_CMD} create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
+    ${KUBE_CMD} create -f https://github.com/jetstack/cert-manager/releases/download/v${CERT_MANAGER_VERSION}/cert-manager.yaml
 fi
 
 
@@ -56,7 +57,7 @@ else
 fi
 
 printf "\n\e[32mCreating Kafka cluster\e[0m\n"
-${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kraft/kafka-single-node.yaml -n ${NAMESPACE}
+${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml -n ${NAMESPACE}
 
 printf "\n\e[32mWaiting for Kafka to be ready...\e[0m\n"
 ${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Ready --timeout=${TIMEOUT}s kafka my-cluster
