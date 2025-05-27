@@ -47,7 +47,7 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
    ```
 3. Create an Apache Kafka cluster:
    ```
-   kubectl apply -f https://strimzi.io/examples/latest/kafka/kraft/kafka-single-node.yaml -n flink 
+   kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml -n flink 
    ```
 4. Install Apicurio Registry:
    ```
@@ -55,12 +55,12 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
    ```
 5. Install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
    ```
-   kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.15.2/cert-manager.yaml
+   kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.17.2/cert-manager.yaml
    kubectl wait deployment --all  --for=condition=Available=True --timeout=300s -n cert-manager
    ```
-6. Deploy Flink Kubernetes Operator 1.10.0 (the latest stable version):
+6. Deploy Flink Kubernetes Operator 1.11.0 (the latest stable version):
    ```
-   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
+   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.11.0/
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
    --set podSecurityContext=null \
    --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
