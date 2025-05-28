@@ -93,7 +93,7 @@ The settings above will checkpoint the Task state every 1 minute under the s3 pa
 
 ## Example: Making the `recommendation-app` fault tolerant and highly available
 
-Here, we will use the [recommendation-app](../recommendation-app) as an example to demonstrate the job manager HA.
+Here, we will use the [recommendation-app](../../tutorials/recommendation-app) as an example to demonstrate the job manager HA.
 
 1. Installing Flink Kubernetes Operator with leader election enabled like this:
    ```

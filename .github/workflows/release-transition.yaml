@@ -50,10 +50,10 @@ jobs:
       - name: Test Build Image
         uses: docker/build-push-action@v6
         with:
-          context: data-generator/
+          context: tutorials/data-generator/
           platforms: linux/amd64,linux/arm64
           push: false
-          file: data-generator/Dockerfile
+          file: tutorials/data-generator/Dockerfile
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
