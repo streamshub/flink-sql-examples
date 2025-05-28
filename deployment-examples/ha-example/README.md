@@ -66,9 +66,9 @@ spec:
   image: quay.io/streamshub/flink-sql-runner:0.2.0
   flinkVersion: v2_0
   flinkConfiguration:
-    # job manager HA settings
-    high-availability.type: KUBERNETES
-    high-availability.storageDir: s3://test/ha
+  # job manager HA settings
+  high-availability.type: KUBERNETES
+  high-availability.storageDir: s3://test/ha
 ```
 
 ## Task Manager
