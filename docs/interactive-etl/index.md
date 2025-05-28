@@ -25,23 +25,21 @@ In order to run this example you will need:
     minikube start --cpus 4 --memory 16G
     ```
 
-2. Run the setup script (from inside the `interactive-etl` folder) to spin up the required components:
+1. From the main `tutorials` directory, run the data generator setup script to spin up the required components:
 
     ```shell
-    ./setup.sh
+    ./scripts/data-gen-setup.sh
     ```
 
-    This script will create a Kafka cluster (using [Strimzi](http://strimzi.io)), installs the [Apicurio schema registry](https://www.apicur.io/registry/) and sets up a [Flink session cluster](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments) (used for long running, multi-purpose deployments) using the [Flink Kubernetes Operator](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/). 
-    It will then start the data-generator application to populate topics within the Kafka cluster.
+    This script will create a Kafka cluster (using [Strimzi](http://strimzi.io)), install the [Apicurio schema registry](https://www.apicur.io/registry/) and will then start the data-generator application to populate topics within the Kafka cluster.
 
     _Note_: 
-    - The script assumes you are running against a minikube cluster where you have full access. You can run it against any other Kubernetes cluster but you will need to have the appropriate permissions to install the operator CRDs etc (see the script for more details of what is installed).
+    - The script assumes you are running against a minikube cluster where you have full access. You can run it against any other Kubernetes cluster, but you will need to have the appropriate permissions to install the operator CRDs etc. See the script for more details of what is installed.
     - You can change the kubernetes client command (for example to use `oc` instead of `kubectl`) by setting the `KUBE_CMD` env var:
       ```shell
-      KUBE_CMD=oc ./setup.sh
+      KUBE_CMD=oc ./scripts/data-gen-setup.sh
       ```
-
-3. You can verify that the test data is flowing correctly by querying the Kafka topics using the console consumer:
+1. You can verify that the test data is flowing correctly by querying the Kafka topics using the console consumer:
 
     ```shell
     kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
@@ -49,6 +47,11 @@ In order to run this example you will need:
     ```
 
     Running the command above should show messages flowing after a few seconds.
+1. Deploy a [Flink session cluster](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments) (used for long-running, multipurpose deployments) using the [Flink Kubernetes Operator](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/):
+
+    ```shell
+    kubectl apply -f interactive-etl/flink-session-cluster.yaml
+    ```
 
 ## Interactive SQL client
 
