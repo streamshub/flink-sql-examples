@@ -37,6 +37,13 @@ If you choose to do this make sure you update the `data-generator.yaml` file for
 
 ### Installing Apache Kafka, Apache Flink and Apicurio Registry
 
+You can install the required components by running:
+```bash
+./scripts/data-gen-setup.sh
+```
+
+Alternatively, you can follow the steps below to install Apache Kafka, Apache Flink and Apicurio Registry manually.
+
 1. Create a `flink` namespace:
    ```
    kubectl create namespace flink
