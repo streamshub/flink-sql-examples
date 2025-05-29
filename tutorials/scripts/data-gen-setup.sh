@@ -20,11 +20,11 @@ else
 fi
 
 # Add the Flink operator's helm repo
-printf "\n\e[32mChecking for Flink Operator ${FLINK_OPERATOR_VERSION} helm repo\e[0m\n" 
+printf "\n\e[32mChecking for Flink Operator %s helm repo\e[0m\n" ${FLINK_OPERATOR_VERSION}
 if helm repo list | grep "flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}" ; then
-    printf "\e[32mFlink Operator ${FLINK_OPERATOR_VERSION} helm repo already exists\e[0m\n"
+    printf "\e[32mFlink Operator %s helm repo already exists\e[0m\n" ${FLINK_OPERATOR_VERSION}
 else
-    printf "\e[32mInstalling the Flink Operator ${FLINK_OPERATOR_VERSION} helm repo\e[0m\n"
+    printf "\e[32mInstalling the Flink Operator %s helm repo\e[0m\n" ${FLINK_OPERATOR_VERSION}
     helm repo add --force-update flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-${FLINK_OPERATOR_VERSION}/
 fi
 
@@ -36,52 +36,52 @@ else
 fi
 
 printf "\n\e[32mWaiting for cert-manager webhook to be ready...\e[0m"
-${KUBE_CMD} -n cert-manager wait --for=condition=Available --timeout=${TIMEOUT}s deployment cert-manager-webhook
+${KUBE_CMD} -n cert-manager wait --for=condition=Available --timeout="${TIMEOUT}"s deployment cert-manager-webhook
 
 printf "\n\e[32mChecking for Flink Operator install\e[0m\n"
-if ${KUBE_CMD} -n ${NAMESPACE} get deployment flink-kubernetes-operator ; then
+if ${KUBE_CMD} -n "${NAMESPACE}" get deployment flink-kubernetes-operator ; then
     printf "\e[32mFlink Operator already installed\e[0m\n"
 else
     printf "\e[32mInstalling the Flink Operator\e[0m\n"
-    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n ${NAMESPACE}
+    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n "${NAMESPACE}"
 fi
 
 printf "\n\e[32mChecking for Strimzi Operator install\e[0m\n"
-if ${KUBE_CMD} -n ${NAMESPACE} get deployment strimzi-cluster-operator ; then
+if ${KUBE_CMD} -n "${NAMESPACE}" get deployment strimzi-cluster-operator ; then
     printf "\e[32mStrimzi Operator already installed\e[0m\n"
 else
     printf "\e[32mInstalling the Strimzi Operator\e[0m\n"
-    ${KUBE_CMD} create -f 'https://strimzi.io/install/latest?namespace=flink' -n ${NAMESPACE}
+    ${KUBE_CMD} create -f 'https://strimzi.io/install/latest?namespace=flink' -n "${NAMESPACE}"
 fi
 
 printf "\n\e[32mCreating Kafka cluster\e[0m\n"
-${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml -n ${NAMESPACE}
+${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml -n "${NAMESPACE}"
 
 printf "\n\e[32mWaiting for Kafka to be ready...\e[0m\n"
-${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Ready --timeout=${TIMEOUT}s kafka my-cluster
+${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Ready --timeout="${TIMEOUT}"s kafka my-cluster
 
 printf "\n\e[32mChecking for Apicurio Registry configuration file\e[0m\n"
 if [ -f "apicurio-registry.yaml" ]; then
     printf "\n\e[32mInstalling Apicurio Registry\e[0m\n"
-    ${KUBE_CMD} apply -f apicurio-registry.yaml -n ${NAMESPACE}
+    ${KUBE_CMD} apply -f apicurio-registry.yaml -n "${NAMESPACE}"
 else
     printf "\n\e[31mError: apicurio-registry.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
     exit 1
 fi
 
 printf "\n\e[32mWaiting for Apicurio to be ready...\e[0m\n"
-${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Available --timeout=${TIMEOUT}s deployment apicurio-registry
+${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Available --timeout="${TIMEOUT}"s deployment apicurio-registry
 
 printf "\n\e[32mChecking for data generator configuration file\e[0m\n"
 if [ -f "recommendation-app/data-generator.yaml" ]; then
     printf "\n\e[32mDeploying data generation application...\e[0m\n"
-    ${KUBE_CMD} -n ${NAMESPACE} apply -f recommendation-app/data-generator.yaml
+    ${KUBE_CMD} -n "${NAMESPACE}" apply -f recommendation-app/data-generator.yaml
 else
     printf "\n\e[31mError: recommendation-app/data-generator.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
     exit 1
 fi
 
 printf "\n\e[32mWaiting for Flink operator to be ready...\e[0m\n"
-${KUBE_CMD} -n ${NAMESPACE} wait --for=condition=Available --timeout=${TIMEOUT}s deployment flink-kubernetes-operator
+${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Available --timeout="${TIMEOUT}"s deployment flink-kubernetes-operator
 
-printf "\n\e[32mThe data generation environment has been set up sucessfully\e[0m\n"
+printf "\n\e[32mThe data generation environment has been set up successfully\e[0m\n"
