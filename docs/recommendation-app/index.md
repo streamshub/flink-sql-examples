@@ -317,7 +317,7 @@ A running Kubernetes cluster (such as [Minikube](https://minikube.sigs.k8s.io/do
 
 ### Deploying Flink cluster for recommendation app
 
-1.  From the `tutorials` directory, run the following setup script:
+1.  From the [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository's `tutorials` directory, run the following command to set up the data generator:
     ```shell
     ./scripts/data-gen-setup.sh
     ```

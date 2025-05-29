@@ -6,7 +6,7 @@ title = 'Interactive ETL using Flink SQL'
 It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface. 
 In this tutorial we go over a simple introduction to using Flink SQL to read from a Kafka topic, perform basic queries, transform and clean data and then load that back into Kafka.
 
-The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the `interactive-etl` directory.
+The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the `tutorials/interactive-etl` directory.
 
 ## Dependencies
 
