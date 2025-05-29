@@ -87,21 +87,25 @@ spec:
    image: quay.io/streamshub/flink-sql-runner:0.2.0
    flinkVersion: v2_0
    flinkConfiguration:
-    # job manager HA settings
-    execution.checkpointing.interval: 1min
-    state.checkpoints.dir: s3://test/cp
+   # job manager HA settings
+   execution.checkpointing.interval: 1min
+   state.checkpoints.dir: s3://test/cp
 ```
 The settings above will checkpoint the Task state every 1 minute under the s3 path provided.
 
 ## Example: Making the `recommendation-app` fault-tolerant and highly available
 
 Here, we will use the [recommendation-app](../recommendation-app) as an example to demonstrate the job manager HA.
-
+We are installing several additional components for this example so you may need a larger K8s cluster (more CPU and memory for you minikube deployment), than for the other examples.
 
 1. If you haven't already, install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
    ```
    kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.17.2/cert-manager.yaml
    kubectl wait deployment --all  --for=condition=Available=True --timeout=300s -n cert-manager
+   ```
+1. Create the `flink` namespace:
+   ```shell
+   kubectl create namespace flink
    ```
 1. Installing Flink Kubernetes Operator with leader election enabled like this:
    ```shell
@@ -115,6 +119,17 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    -n flink
    ```
 1. Follow the [guide](minio-install/README.md) to deploy and create a local S3 compatible storage service using minio and add a bucket named `test`.
+1. Deploy Apicurio, Strimzi and Kafka as per the instructions in the [README](../README.md#installing-apache-kafka-apache-flink-and-apicurio-registry).
+1. Deploy the data generator application to generate data for the recommendation app:
+   ```shell
+   kubectl -n flink apply -f ../recommendation-app/data-generator.yaml
+   ```
+   This will create a deployment that generates data and sends it to the Kafka topic `flink.recommendation.products`.
+1. Create a ConfigMap that holds product inventory data in CSV format.
+    ```shell
+    kubectl create configmap product-inventory --from-file ../recommendation-app/productInventory.csv -n flink
+    ```
+   The ConfigMap will be volume mounted to the recommendation-app pods.
 1. Deploy the `FlinkDeployment` CR with HA configured
    ```shell
    kubectl -n flink apply -f recommendation-app-HA/flink-deployment-ha.yaml
