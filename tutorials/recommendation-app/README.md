@@ -4,4 +4,4 @@
 It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface. 
 In this tutorial we go over how to create an application, using Flink SQL for a retail sales company that wants to display a widget on product pages of similar products that the user might be interested in buying.
 
-You can read the tutorial source directly in the `docs/recommendation-app/index.md` file or refer to the [version]() on the [StreamsHub site]().
+You can read the tutorial source directly in the `docs/recommendation-app/index.md` file or refer to the [version](https://www.streamshub.io/docs/flink-sql-tutorials/main/recommendation-app/) on the [StreamsHub site](https://www.streamshub.io).
