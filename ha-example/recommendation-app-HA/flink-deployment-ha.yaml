@@ -3,8 +3,8 @@ kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image: quay.io/streamshub/flink-sql-runner:v0.0.1
-  flinkVersion: v1_19
+  image: quay.io/streamshub/flink-sql-runner:0.2.0
+  flinkVersion: v2_0
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
     metrics.reporters: prom
@@ -12,7 +12,6 @@ spec:
     # job manager HA settings
     high-availability.type: KUBERNETES
     high-availability.storageDir: s3://test/ha
-    kubernetes.cluster-id: ha-test
     # task checkpointing settings
     execution.checkpointing.interval: 1min
     execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
@@ -23,7 +22,7 @@ spec:
     # S3 (minio) connection settings
     s3.access-key: minioadmin
     s3.secret-key: minioadmin
-    s3.endpoint: http://MINIO_POD_ID:9000
+    s3.endpoint: http://minio-api.flink.svc.cluster.local:9000
     s3.path.style.access: "true"
   serviceAccount: flink
   podTemplate:
@@ -40,9 +39,6 @@ spec:
           volumeMounts:
             - name: product-inventory-vol
               mountPath: /opt/flink/data
-          env:
-            - name: ENABLE_BUILT_IN_PLUGINS
-              value: flink-s3-fs-hadoop-1.19.1.jar;flink-s3-fs-presto-1.19.1.jar
       volumes:
         - name: product-inventory-vol
           configMap:

@@ -63,7 +63,8 @@ kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image: quay.io/streamshub/flink-sql-runner:latest
+  image: quay.io/streamshub/flink-sql-runner:0.2.0
+  flinkVersion: v2_0
   flinkConfiguration:
     # job manager HA settings
     high-availability.type: KUBERNETES
@@ -83,20 +84,31 @@ kind: FlinkDeployment
 metadata:
   name: recommendation-app
 spec:
-  image: quay.io/streamshub/flink-sql-runner:latest
-  flinkConfiguration:
-    # job manager HA settings
-    execution.checkpointing.interval: 1min
-    state.checkpoints.dir: s3://test/cp
+   image: quay.io/streamshub/flink-sql-runner:0.2.0
+   flinkVersion: v2_0
+   flinkConfiguration:
+   # job manager HA settings
+   execution.checkpointing.interval: 1min
+   state.checkpoints.dir: s3://test/cp
 ```
 The settings above will checkpoint the Task state every 1 minute under the s3 path provided.
 
-## Example: Making the `recommendation-app` fault tolerant and highly available
+## Example: Making the `recommendation-app` fault-tolerant and highly available
 
 Here, we will use the [recommendation-app](../recommendation-app) as an example to demonstrate the job manager HA.
+We are installing several additional components for this example so you may need a larger K8s cluster (more CPU and memory for you minikube deployment), than for the other examples.
 
-1. Installing Flink Kubernetes Operator with leader election enabled like this:
+1. If you haven't already, install cert-manager (this creates cert-manager in a namespace called `cert-manager`):
    ```
+   kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.17.2/cert-manager.yaml
+   kubectl wait deployment --all  --for=condition=Available=True --timeout=300s -n cert-manager
+   ```
+1. Create the `flink` namespace:
+   ```shell
+   kubectl create namespace flink
+   ```
+1. Installing Flink Kubernetes Operator with leader election enabled like this:
+   ```shell
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
    --set podSecurityContext=null \
    --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
@@ -106,38 +118,51 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    kubernetes.operator.leader-election.lease-name:\ flink-operator-lease" \
    -n flink
    ```
-2. Follow the [guide](minio-install/README.md) to deploy and create a local S3 compatible storage service using minio and add a bucket named `test`.
-3. Replace the `MINIO_POD_ID` in `recommendation-app-HA/flink-deployment-ha.yaml` with this command output:
+1. Follow the [guide](minio-install/README.md) to deploy and create a local S3 compatible storage service using minio and add a bucket named `test`.
+1. Deploy Apicurio, Strimzi and Kafka as per the instructions in the [README](../README.md#installing-apache-kafka-apache-flink-and-apicurio-registry).
+1. Deploy the data generator application to generate data for the recommendation app:
+   ```shell
+   kubectl -n flink apply -f ../recommendation-app/data-generator.yaml
    ```
-   kubectl get pod minio -n flink --template={{.status.podIP}}
+   This will create a deployment that generates data and sends it to the Kafka topic `flink.recommendation.products`.
+1. Create a ConfigMap that holds product inventory data in CSV format.
+    ```shell
+    kubectl create configmap product-inventory --from-file ../recommendation-app/productInventory.csv -n flink
+    ```
+   The ConfigMap will be volume mounted to the recommendation-app pods.
+1. Deploy the `FlinkDeployment` CR with HA configured
+   ```shell
+   kubectl -n flink apply -f recommendation-app-HA/flink-deployment-ha.yaml
    ```
-4. Deploy the `FlinkDeployment` CR with HA configured
+1. There should be 2 recommendation-app job manager and 1 task manager pod deployed
+   ```shell
+   kubectl -n flink get pod -l app=recommendation-app
    ```
-   kubectl apply -f recommendation-app-HA/flink-deployment-ha.yaml -n flink
    ```
-5. There should be 2 recommendation-app job manager and 1 task manager pod deployed
-   ```
-   kubectl  get pod -l app=recommendation-app -n flink
    NAME                                  READY   STATUS    RESTARTS   AGE
    recommendation-app-76b6854f98-4qcz4   1/1     Running   0          3m59s
    recommendation-app-76b6854f98-9zb24   1/1     Running   0          3m59s
    recommendation-app-taskmanager-1-1    1/1     Running   0          2m5s
    ``` 
-6. Browse the minio console, to make sure the metadata of the job manager is uploaded to `s3://test/ha` 
-7. Find out which job manager pod is the leader
+1. Browse the minio console, to make sure the metadata of the job manager is uploaded to `s3://test/ha` 
+1. Find out which job manager pod is the leader
 
    To do this, check the pod logs.
    If a job manager is the standby, then the log will indicate that it is watching and waiting to becoming the leader.
+   ```shell
+   kubectl -n flink logs recommendation-app-76b6854f98-4qcz4 --tail=2 -f
    ```
-   kubectl  logs -n flink recommendation-app-76b6854f98-4qcz4 --tail=2 -f
+   ```
    2024-12-11 08:31:22,729 INFO  org.apache.flink.kubernetes.kubeclient.resources.KubernetesConfigMapSharedInformer [] - Starting to watch for flink/recommendation-app-cluster-config-map, watching id:3c7e23f2-fcaa-4f47-8623-fa1ebe9609ea
    2024-12-11 08:31:22,729 INFO  org.apache.flink.kubernetes.kubeclient.resources.KubernetesConfigMapSharedInformer [] - Starting to watch for flink/recommendation-app-cluster-config-map, watching id:ea191b50-a1ce-43c6-9bfc-a61f739fa8b3
    ```
-8. Delete the leader pod of job manager, and monitor the logs of the standby pod
+1. Delete the leader pod of job manager, and monitor the logs of the standby pod
 
    Keep the step(7) command running, and delete the leader pod in another terminal
+   ```shell
+   kubectl -n flink logs recommendation-app-76b6854f98-4qcz4 --tail=2 -f
    ```
-   kubectl  logs -n flink recommendation-app-76b6854f98-4qcz4 --tail=2 -f
+   ```
    ...
    2024-12-11 08:50:16,438 INFO  org.apache.flink.kubernetes.kubeclient.resources.KubernetesLeaderElector [] - New leader elected  for recommendation-app-cluster-config-map.
    2024-12-11 08:50:16,518 INFO  org.apache.flink.kubernetes.kubeclient.resources.KubernetesLeaderElector [] - New leader elected 907d6eda-7619-45c5-97c6-e2a6243f56f6 for recommendation-app-cluster-config-map.
@@ -145,13 +170,14 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    2024-12-11 08:50:16,524 INFO  org.apache.flink.runtime.resourcemanager.ResourceManagerServiceImpl [] - Resource manager service is granted leadership with session id 87a6a102-c77b-4ec2-b263-b20a60921c9e.
    ```
    You should see the leadership is changed to the other pod.
-9. Make sure the checkpointing file is successfully uploaded to `s3://test/cp` via the minio console. 
-10. Monitor the sink topic in kafka
-
+1. Make sure the checkpointing file is successfully uploaded to `s3://test/cp` via the minio console. 
+1. Monitor the sink topic in kafka
    Run the console consumer to get the result of sink topic:
-   ```
-   kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
+   ```shell
+   kubectl -n flink exec -it my-cluster-dual-role-0 -- /bin/bash \
    ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic flink.recommended.products --from-beginning
+   ```
+   ```
    user-36,"83,172,77,41,128,168","2024-12-11 08:32:35"
    user-63,"15,141,160,64,23,143","2024-12-11 08:32:35"
    user-0,"83,172,77,41,128,168","2024-12-11 08:32:40"
@@ -160,14 +186,18 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
    user-75,128,"2024-12-11 09:00:25"
    ```
    It will emit the result by time. Keep this terminal open, we'll check it later.
-11. Delete the task manager pod
+1. Delete the task manager pod
+   ```shell
+   kubectl -n flink delete pod recommendation-app-taskmanager-1-1
    ```
-   kubectl  delete pod/recommendation-app-taskmanager-1-1 -n flink
+   ```
    pod "recommendation-app-taskmanager-1-1" deleted
    ```
-12. Make sure the newly created task manager pod is loading the checkpoint
+1.  Make sure the newly created task manager pod is loading the checkpoint
+    ```shell
+    kubectl -n flink logs recommendation-app-taskmanager-2-1 -f | grep test/cp
     ```
-    kubectl  logs recommendation-app-taskmanager-2-1 -n flink -f | grep test/cp
+    ```
     ...
     2024-12-11 09:02:53,271 INFO  org.apache.flink.runtime.state.heap.HeapRestoreOperation     [] - Starting to restore from state handle: KeyGroupsStateHandle{groupRangeOffsets=KeyGroupRangeOffsets{keyGroupRange=KeyGroupRange{startKeyGroup=0, endKeyGroup=127}}, stateHandle=RelativeFileStateHandle State: s3://test/cp/61f9e79ca6a301ed97cc4c1c6197accf/chk-28/0a34bfc6-188c-405f-8778-114caa6029ec, 0a34bfc6-188c-405f-8778-114caa6029ec [1209621 bytes]}.
     2024-12-11 09:02:54,576 INFO  org.apache.flink.runtime.state.heap.HeapRestoreOperation     [] - Starting to restore from state handle: KeyGroupsStateHandle{groupRangeOffsets=KeyGroupRangeOffsets{keyGroupRange=KeyGroupRange{startKeyGroup=0, endKeyGroup=127}}, stateHandle=RelativeFileStateHandle State: s3://test/cp/61f9e79ca6a301ed97cc4c1c6197accf/chk-28/6b904fdf-d657-4a34-ab72-8f455c1aa578, 6b904fdf-d657-4a34-ab72-8f455c1aa578 [111579 bytes]}.
@@ -177,10 +207,12 @@ Here, we will use the [recommendation-app](../recommendation-app) as an example 
     2024-12-11 09:02:55,572 INFO  org.apache.flink.runtime.state.heap.HeapRestoreOperation     [] - Finished restoring from state handle: KeyGroupsStateHandle{groupRangeOffsets=KeyGroupRangeOffsets{keyGroupRange=KeyGroupRange{startKeyGroup=0, endKeyGroup=127}}, stateHandle=RelativeFileStateHandle State: s3://test/cp/61f9e79ca6a301ed97cc4c1c6197accf/chk-28/ea11d00d-c79b-49d4-b1ff-a73ad01b7197, ea11d00d-c79b-49d4-b1ff-a73ad01b7197 [48167 bytes]}.
     ...
     ```
-13. Check the sink topic consumer output, it should continue from minutes ago, not from the beginning:
-    ```
-    kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
+1.  Check the sink topic consumer output, it should continue from minutes ago, not from the beginning:
+    ```shell
+    kubectl -n flink exec -it my-cluster-dual-role-0 -- /bin/bash \
     ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic flink.recommended.products --from-beginning
+    ```
+    ``` 
     user-36,"83,172,77,41,128,168","2024-12-11 08:32:35"
     user-63,"15,141,160,64,23,143","2024-12-11 08:32:35"
     ...

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: minio
-          image: quay.io/minio/minio:latest
+          image: quay.io/minio/minio:RELEASE.2025-05-24T17-08-30Z-cpuv1
           command:
             - /bin/bash
             - -c
@@ -30,3 +30,18 @@ spec:
           hostPath: # MinIO generally recommends using locally-attached volumes
             path: /mnt/disk1/data # Specify a path to a local drive or volume on the Kubernetes worker node
             type: DirectoryOrCreate # The path to the last directory must exist
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minio
+  name: minio-api
+spec:
+  type: ClusterIP
+  selector:
+    app: minio
+  ports:
+    - port: 9000
+      protocol: TCP
+      targetPort: 9000
