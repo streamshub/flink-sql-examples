@@ -7,15 +7,16 @@ This folder contains an example minio deployment yaml and the instructions are b
    kubectl -n flink apply -f minio.yaml
    ```
    This will create the minio deployment and service for the minio API endpoint (that Flink will use to store state).
-1. Expose the minio WebUI:
+1. We need to create a storage bucket within minio. We could do this by exposing the minio-api service and using the [minio CLI client](https://min.io/docs/minio/linux/reference/minio-mc.html). However, for convenience, we will use the minio web UI. To do this, we need to expose the web UI's port on the minio deployment:
    ```shell
    kubectl -n flink expose deployment minio --name=minio-ui --type=NodePort --port=9090
    ```
+   Depending on how you Kubernetes cluster is set up, you may need to use a different service type (like LoadBalancer) or use an Ingress resource to expose the WebUI. NodePort should be sufficient for local testing with minikube.
 1. Get the WebUI address. If you are using minikube, you can use the following command to get the address:
    ```shell
    minikube service -n flink minio-ui --url 
    ```
-   or you can find the assigned nodeport via:
+   or you can find the assigned NodePort via:
    ```shell
    kubectl -n flink get service minio --output='jsonpath="{.spec.ports[0].nodePort}"'
    ```
