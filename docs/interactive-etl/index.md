@@ -336,11 +336,11 @@ The ETL query (deployed above) will run like any other Flink streaming job and c
 However, your session Flink cluster might primarily be for data exploration and development, which means your ETL job would be competing for resources with other queries. 
 If your transformed data is needed in production, it would be better to deploy the query as a stand-alone Flink Job independent of the session Flink cluster.
 
-There is an example FlinkDeployment CR (`standalone-etl-deployment.yaml`) in this directory that will deploy the queries above in Flink's application mode. 
+There is an example FlinkDeployment CR (`standalone-etl-deployment.yaml`) that will deploy the queries above in Flink's application mode. 
 This will deploy the ETL query in a self-contained Flink cluster that can be managed like any other FlinkDeployment.
 
 ```shell
-kubectl -n flink apply -f standalone-etl-deployment.yaml
+kubectl -n flink apply -f interactive-etl/standalone-etl-deployment.yaml
 ```
 
 Once you know that is running (`kubectl -n flink get pods`), you can see the cleaned data in Kafka by querying the new output topic (this has a different name to the one used in the interactive demo):
