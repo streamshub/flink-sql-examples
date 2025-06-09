@@ -159,8 +159,8 @@ WHERE quantity >= 3;
 ```
 
 This might take a little while to show, there aren't many people buying lots of units.
-Ok, lets find the true big spenders. 
-User IDs for users who buy 3 or more items over 500 GBP:
+Ok, lets find the truly popular products.
+Product IDs for products that cost more than £500 and which someone bought at least 3 units of at once:
 
 ```sql
 SELECT 
