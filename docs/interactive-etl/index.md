@@ -50,7 +50,7 @@ In order to run this example you will need:
 1. Deploy a [Flink session cluster](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments) (used for long-running, multipurpose deployments) using the [Flink Kubernetes Operator](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/):
 
     ```shell
-    kubectl apply -f interactive-etl/flink-session-cluster.yaml
+    kubectl -n flink apply -f interactive-etl/flink-session.yaml
     ```
 
 ## Interactive SQL client
