@@ -65,9 +65,9 @@ Alternatively, you can follow the steps below to install Apache Kafka, Apache Fl
    kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.17.2/cert-manager.yaml
    kubectl wait deployment --all  --for=condition=Available=True --timeout=300s -n cert-manager
    ```
-6. Deploy Flink Kubernetes Operator 1.11.0 (the latest stable version):
+6. Deploy Flink Kubernetes Operator 1.12.0 (the latest stable version):
    ```
-   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.11.0/
+   helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.12.0/
    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
    --set podSecurityContext=null \
    --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
