@@ -311,16 +311,33 @@ INSERT INTO CsvSinkTable
 
 ## Running the application
 
-### Prerequisite:
+### Dependencies
 
-A running Kubernetes cluster (such as [Minikube](https://minikube.sigs.k8s.io/docs/)) with `kubectl` configured to access it.
+In order to run this example you will need:
+
+- [Minikube](https://minikube.sigs.k8s.io/docs/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+- [Helm](https://helm.sh/)
 
 ### Deploying Flink cluster for recommendation app
 
+1.  Spin up a [minikube](https://minikube.sigs.k8s.io/docs/) cluster:
+    ```shell
+    minikube start --cpus 4 --memory 16G
+    ```
 1.  From the [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository's `tutorials` directory, run the following command to set up the data generator:
     ```shell
     ./scripts/data-gen-setup.sh
     ```
+    _Note_:
+    - You can change the kubernetes client command (for example to use `oc` instead of `kubectl`) by setting the `KUBE_CMD` env var:
+      ```shell
+      KUBE_CMD=oc ./scripts/data-gen-setup.sh
+      ```
+    - If you have a minikube kubectl alias e.g. `alias kubectl="minikube kubectl --"` the script won't use it. Instead, you can do the following:
+      ```shell
+      KUBE_CMD='minikube kubectl --' ./scripts/data-gen-setup.sh
+      ```
 1.  Create a ConfigMap that holds product inventory data in CSV format. 
     ```
     kubectl create configmap product-inventory --from-file recommendation-app/productInventory.csv -n flink
