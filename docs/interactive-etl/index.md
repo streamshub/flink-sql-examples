@@ -50,7 +50,7 @@ In order to run this example you will need:
 1. Deploy a [Flink session cluster](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments) (used for long-running, multipurpose deployments) using the [Flink Kubernetes Operator](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/):
 
     ```shell
-    kubectl apply -f interactive-etl/flink-session-cluster.yaml
+    kubectl -n flink apply -f interactive-etl/flink-session.yaml
     ```
 
 ## Interactive SQL client
@@ -159,8 +159,8 @@ WHERE quantity >= 3;
 ```
 
 This might take a little while to show, there aren't many people buying lots of units.
-Ok, lets find the true big spenders. 
-User IDs for users who buy 3 or more items over 500 GBP:
+Next, lets find the popular products which are also expensive.
+Product IDs for products that cost more than £500 and which someone bought at least 3 units of at once:
 
 ```sql
 SELECT 
@@ -336,11 +336,11 @@ The ETL query (deployed above) will run like any other Flink streaming job and c
 However, your session Flink cluster might primarily be for data exploration and development, which means your ETL job would be competing for resources with other queries. 
 If your transformed data is needed in production, it would be better to deploy the query as a stand-alone Flink Job independent of the session Flink cluster.
 
-There is an example FlinkDeployment CR (`standalone-etl-deployment.yaml`) in this directory that will deploy the queries above in Flink's application mode. 
+There is an example FlinkDeployment CR (`standalone-etl-deployment.yaml`) that will deploy the queries above in Flink's application mode. 
 This will deploy the ETL query in a self-contained Flink cluster that can be managed like any other FlinkDeployment.
 
 ```shell
-kubectl -n flink apply -f standalone-etl-deployment.yaml
+kubectl -n flink apply -f interactive-etl/standalone-etl-deployment.yaml
 ```
 
 Once you know that is running (`kubectl -n flink get pods`), you can see the cleaned data in Kafka by querying the new output topic (this has a different name to the one used in the interactive demo):
