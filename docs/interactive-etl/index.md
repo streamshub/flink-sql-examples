@@ -159,7 +159,7 @@ WHERE quantity >= 3;
 ```
 
 This might take a little while to show, there aren't many people buying lots of units.
-Ok, lets find the truly popular products.
+Next, lets find the popular products which are also expensive.
 Product IDs for products that cost more than £500 and which someone bought at least 3 units of at once:
 
 ```sql
