@@ -102,6 +102,8 @@ mvn archetype:generate \
 cd ~/currency-converter
 ```
 
+> Note: Flink provides a [Maven Archetype and quickstart script](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/overview/#getting-started) for getting started. However, it includes a lot of dependencies and boilerplate we don't need for this tutorial, so we will start with a minimal Maven project instead.
+
 We can remove the provided tests and their dependencies, as we don't need them for this tutorial:
 
 ```shell
