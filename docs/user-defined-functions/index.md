@@ -471,13 +471,15 @@ We can do a simple query to verify that the table was created correctly and that
 SELECT * FROM InternationalSalesRecordTable;
 ```
 
-If that worked, we can now register our UDF:
+If that worked, we can now register our UDF as a [temporary catalog function](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/create/#create-function):
 
 ```sql
-CREATE FUNCTION currency_convert
+CREATE TEMPORARY FUNCTION currency_convert
 AS 'com.github.example.CurrencyConverter'
 USING JAR '/opt/flink/opt/currency-converter-1.0-SNAPSHOT.jar';
 ```
+
+> Note: Temporary catalog functions [only live as long as the current session](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/overview/#types-of-functions). You can omit the `TEMPORARY` keyword to create a catalog function that persists across sessions.
 
 > Note: This statement may succeed even if the JAR was not found or has insufficient permissions. You will likely only find this out when you try to use the UDF in a query.
 
