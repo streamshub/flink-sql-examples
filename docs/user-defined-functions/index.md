@@ -36,8 +36,7 @@ However, it looks like the person who owns this schema repeated the same mistake
 
 ```shell
 $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
-    ./bin/kafka-console-consumer.sh --bootstrap-server \
-        localhost:9092 \
+    ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
         --topic flink.international.sales.records
 
 user-82130&53972644729678620433
@@ -494,4 +493,81 @@ SELECT
 FROM InternationalSalesRecordTable;
 ```
 
-You should start seeing results with both a `unit_cost` field and an `iso_unit_cost` field containing the output of our UDF.
+You should start seeing results with both a `unit_cost` field and an `iso_unit_cost` field containing the output of our UDF!
+
+We can also use the UDF in more complex queries e.g. to filter for records with a specific currency and quantity:
+
+```sql
+SELECT 
+    DISTINCT(product_id), 
+    iso_unit_cost, 
+    quantity 
+  FROM (
+      SELECT 
+          invoice_id, 
+          user_id,
+          product_id,
+          CAST(quantity AS INT) AS quantity, 
+          currency_convert(unit_cost) AS iso_unit_cost,
+          unit_cost,
+          purchase_time
+      FROM InternationalSalesRecordTable
+    )
+WHERE 
+    RIGHT(iso_unit_cost, 3) = 'EUR' AND quantity > 1;
+```
+
+> Note: This query might take a while to return results, since there are many currencies used in the data!
+
+### Persisting back to Kafka
+
+Just like in the [Interactive ETL example](../interactive-etl/index.md), we can create a new table to persist the output of our query back to Kafka (look at that example for an explanation of the steps below). This way we don't have to run the query every time we want to access the formatted cost.
+
+First, let's define the table, and specify `csv` as the format so we don't have to provide a schema:
+
+```sql
+CREATE TABLE IsoInternationalSalesRecordTable ( 
+    invoice_id STRING, 
+    user_id STRING, 
+    product_id STRING, 
+    quantity INT, 
+    iso_unit_cost STRING, 
+    purchase_time TIMESTAMP(3),
+    PRIMARY KEY (`user_id`) NOT ENFORCED
+) WITH ( 
+    'connector' = 'upsert-kafka', 
+    'topic' = 'flink.iso.international.sales.records.interactive', 
+    'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+    'properties.client.id' = 'sql-cleaning-client', 
+    'properties.transaction.timeout.ms' = '800000', 
+    'key.format' = 'csv', 
+    'value.format' = 'csv', 
+    'value.fields-include' = 'ALL' 
+);
+```
+
+Next, let's insert the results of the formatting query into it:
+
+```sql
+INSERT INTO IsoInternationalSalesRecordTable
+SELECT 
+    invoice_id, 
+    user_id,
+    product_id,
+    CAST(quantity AS INT), 
+    currency_convert(unit_cost), 
+    purchase_time
+FROM InternationalSalesRecordTable;
+```
+
+Finally, we can verify the data is being written to the new topic by running the following command in a new terminal:
+
+```shell
+$ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
+  ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+    --topic flink.iso.international.sales.records.interactive
+
+5688844959819606179,user-96,0,1,"448 INR","2025-06-13 11:28:29.722"
+7208742491425008088,user-87,106,3,"587 UAH","2025-06-13 11:28:32.725"
+8796404564173987612,user-70,105,1,"399 EUR","2025-06-13 11:28:35.728"
+```
