@@ -437,10 +437,12 @@ Next, we will create a container with our JAR mounted into it:
 
 ```shell
 podman run -it --rm --net=host \
-    -v ~/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar:/opt/flink/opt/currency-converter-1.0-SNAPSHOT.jar:Z \
+    -v ~/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar:/opt/currency-converter-1.0-SNAPSHOT.jar:Z \
     quay.io/streamshub/flink-sql-runner:0.2.0 \
         /opt/flink/bin/sql-client.sh embedded
 ```
+
+> Note: Flink [ships optional dependencies in `/opt`](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/advanced/#anatomy-of-the-flink-distribution), so that's a good place to mount our JAR.
 
 > Note: Don't forget the `:Z` at the end of the volume mount if using a system with SELinux! Otherwise, you will get a permission error when trying to use the JAR later.
 
@@ -477,7 +479,7 @@ If that worked, we can now register our UDF as a [temporary catalog function](ht
 ```sql
 CREATE TEMPORARY FUNCTION currency_convert
 AS 'com.github.example.CurrencyConverter'
-USING JAR '/opt/flink/opt/currency-converter-1.0-SNAPSHOT.jar';
+USING JAR '/opt/currency-converter-1.0-SNAPSHOT.jar';
 ```
 
 > Note: Temporary catalog functions [only live as long as the current session](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/overview/#types-of-functions). You can omit the `TEMPORARY` keyword to create a catalog function that persists across sessions.
