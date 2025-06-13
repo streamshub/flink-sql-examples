@@ -2,6 +2,7 @@ package com.github.streamshub.kafka.data.generator;
 
 import com.github.streamshub.kafka.data.generator.examples.ClickStreamData;
 import com.github.streamshub.kafka.data.generator.examples.SalesData;
+import com.github.streamshub.kafka.data.generator.examples.InternationalSalesData;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ public class Main {
         switch(dataType) {
             case "clickStream" -> data = new ClickStreamData();
             case "sales" -> data = new SalesData();
+            case "internationalSales" -> data = new InternationalSalesData();
             default -> throw new RuntimeException("Unknown data type " + dataType);
         }
         return data;

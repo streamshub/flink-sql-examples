@@ -21,7 +21,7 @@ spec:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "my-cluster-kafka-bootstrap.flink.svc:9092"
             - name: DATA
-              value: "clickStream,sales"
+              value: "clickStream,sales,internationalSales"
             - name: USE_APICURIO_REGISTRY
               value: "true"
             - name: REGISTRY_URL
