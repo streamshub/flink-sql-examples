@@ -273,26 +273,35 @@ By speaking to authors of the upstream services, we should be able to obtain a l
 >
 > — authors of the upstream services
 
-In our UDF, we can create a `Map` of these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes. We will use these when converting the `unit_cost` field into our desired format.
+In our UDF, we can create an `enum` that maps these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes. We will use these when converting the `unit_cost` field into our desired format.
 
 ```java
 package com.github.example;
-
-import java.util.Map;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
 public class CurrencyConverter extends ScalarFunction {
    // https://www.unicode.org/charts/nameslist/n_20A0.html
    // https://www.iso.org/iso-4217-currency-codes.html
-   private static final Map<Character, String> CURRENCY_SYMBOL_ISO_MAP = Map.of(
-      '€', "EUR",
-      '₹', "INR",
-      '₺', "TRY",
-      '฿', "THB",
-      '₴', "UAH",
-      '₮', "MNT"
-   );
+   enum Currency {
+      €("EUR"),
+      ₹("INR"),
+      ₺("TRY"),
+      ฿("THB"),
+      ₴("UAH"),
+      ₮("MNT"),
+      ERR("ERR");
+
+      private final String isoCode;
+
+      Currency(String isoCode) {
+         this.isoCode = isoCode;
+      }
+
+      public String getIsoCode() {
+         return isoCode;
+      }
+   }
 
    // e.g. currencyAmount = "€100"
    public String eval(String currencyAmount) {
@@ -307,10 +316,10 @@ Now, we can begin implementing our function logic in the `eval` method.
 
 As a reminder, we want to convert a string like "€100" into "100 EUR". To do this, we can use the following steps:
 
-1. Get the first character of the string, which is the currency symbol (e.g. '€').
+1. Get the first character of the string, which is the currency symbol (e.g. "€").
 2. Get the rest of the string, which is the amount (e.g. "100").
-3. Look up the currency symbol in our `Map` to get the corresponding currency code (e.g. '€' => "EUR").
-4. If the lookup returned `null` (currency symbol was not found in the `Map`), we can return "???" as the currency code.
+3. Look up the currency symbol in our `enum` to get the corresponding currency code (e.g. "€" => "EUR").
+4. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code.
 5. Concatenate the currency code to the amount, and return the result (e.g. "100 EUR").
 
 A possible implementation could look like this:
@@ -318,40 +327,50 @@ A possible implementation could look like this:
 ```java
 package com.github.example;
 
-import java.util.Map;
-
 import org.apache.flink.table.functions.ScalarFunction;
 
 public class CurrencyConverter extends ScalarFunction {
    // https://www.unicode.org/charts/nameslist/n_20A0.html
    // https://www.iso.org/iso-4217-currency-codes.html
-   private static final Map<Character, String> CURRENCY_SYMBOL_ISO_MAP = Map.of(
-      '€', "EUR",
-      '₹', "INR",
-      '₺', "TRY",
-      '฿', "THB",
-      '₴', "UAH",
-      '₮', "MNT"
-   );
+   enum Currency {
+      €("EUR"),
+      ₹("INR"),
+      ₺("TRY"),
+      ฿("THB"),
+      ₴("UAH"),
+      ₮("MNT"),
+      ERR("ERR");
+
+      private final String isoCode;
+
+      Currency(String isoCode) {
+         this.isoCode = isoCode;
+      }
+
+      public String getIsoCode() {
+         return isoCode;
+      }
+   }
 
    // Value of passed field (e.g. "unit_cost") is passed in e.g. "€100"
    public String eval(String currencyAmount) {
       // 1. Get the first character of the string, which is the currency symbol (e.g. '€').
-      char currencySymbol = currencyAmount.charAt(0);
+      String currencySymbol = currencyAmount.substring(0, 1);
 
       // 2. Get the rest of the string, which is the amount (e.g. "100").
       String amount = currencyAmount.substring(1);
 
-      // 3. Look up the currency symbol in our Map to get the corresponding currency code (e.g. '€' => "EUR").
-      String currencyIsoCode = CURRENCY_SYMBOL_ISO_MAP.get(currencySymbol);
-
-      // 4. If the currency symbol is not found in the Map, we can return "???" as the currency code.
-      if (currencyIsoCode == null) {
-         currencyIsoCode = "???";
+      Currency currency;
+      try {
+         // 3. Look up the currency symbol in our enum to get the corresponding currency code (e.g. "€" => "EUR").
+         currency = Currency.valueOf(currencySymbol);
+      } catch (Exception e) {
+         // 4. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code.
+         currency = Currency.ERR; // e.g. ">" => "ERR"
       }
 
       // 5. Concatenate the currency code to the amount, and return the result (e.g. "100 EUR").
-      return amount + " " + currencyIsoCode;
+      return amount + " " + currency.getIsoCode(); // e.g. "100 EUR"
    }
 }
 ```
