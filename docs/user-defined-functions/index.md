@@ -36,6 +36,8 @@ The schema for this topic can be seen in the `data-generator/src/main/resources/
 
 However, it looks like the person who owns this schema repeated the same mistake they did for the Sales schema we looked at in the [Interactive ETL example](../interactive-etl/index.md), and decided to once again include the currency symbol at the start of the `unit_cost` field (at least they're consistent...)!
 
+*(Assuming you have the data generator up and running as per the instructions in the [Setup](#setup) section, you can verify this by running the following command):*
+
 ```shell
 $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
     ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
