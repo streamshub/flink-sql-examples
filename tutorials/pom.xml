@@ -18,6 +18,7 @@
         <kafka.version>3.9.1</kafka.version>
         <apicurio-registry.version>2.6.8.Final</apicurio-registry.version>
         <avro.version>1.12.0</avro.version>
+        <flink.version>2.0.0</flink.version>
     </properties>
 
     <modules>
