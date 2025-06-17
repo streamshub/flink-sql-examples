@@ -265,14 +265,13 @@ public class CurrencyConverter extends ScalarFunction {
 Flink's [Automatic Type Inference](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference) will use reflection to derive SQL data types for the argument and result of our UDF. 
 If you want to override this behaviour, you can [explicitly specify the types]((https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference)), but in this case we will keep it simple and let Flink decide for us.
 
-If we look at the [Data Generator](https://github.com/streamshub/flink-sql-examples/blob/main/data-generator/src/main/java/com/github/streamshub/kafka/data/generator/examples/InternationalSalesData.java) in the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository, we can see the possible currency symbols that can appear in the `unit_cost` field:
+By speaking to authors of the upstream services, we should be able to obtain a list of currency symbols that can potentially appear in the `unit_cost` field:
 
-```java
-public class InternationalSalesData implements Data {
-    private static final char[] CURRENCY_SYMBOLS = {'€', '₹', '₺', '฿', '₴', '₮'};
-    // ... other fields and methods
-}
-```
+> Here is list of currency symbols that can potentially appear in the `unit_cost` field:
+>
+> `'€', '₹', '₺', '฿', '₴', '₮'`
+>
+> — authors of the upstream services
 
 In our UDF, we can create a `Map` of these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes. We will use these when converting the `unit_cost` field into our desired format.
 
