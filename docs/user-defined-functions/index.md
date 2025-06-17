@@ -5,7 +5,9 @@ title = 'Simple User Defined Functions'
 > Note: This tutorial is mainly focused on creating a simple [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/overview/) [User Defined Function (UDF)](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/). For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/) and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments), look at the [Interactive ETL example](../interactive-etl/index.md).
 
 [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/overview/) is a powerful tool for data exploration, manipulation and inter-connection.
-It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface.
+Flink SQL has many [built-in functions](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/systemfunctions/#system-built-in-functions), that allow you to extract and manipulate data from the many sources that Flink supports. 
+However, sometimes you need to be able to do operations not covered by these built-in functions.
+In that situation Flink gives you the option of creating your own functions.
 In this tutorial we show how to write a simple [User Defined Function (UDF)](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/) in Java and use it to manipulate data in a Flink SQL query running on a [Flink session cluster](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments).
 
 The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the `tutorials/user-defined-functions` and `tutorials/currency-converter` directories.
@@ -32,7 +34,7 @@ The schema for this topic can be seen in the `data-generator/src/main/resources/
 }
 ```
 
-However, it looks like the person who owns this schema repeated the same mistake he did for the Sales schema we looked at in the [Interactive ETL example](../interactive-etl/index.md), and decided to once again include the currency symbol at the start of the `unit_cost` field! (at least he's consistent...).
+However, it looks like the person who owns this schema repeated the same mistake they did for the Sales schema we looked at in the [Interactive ETL example](../interactive-etl/index.md), and decided to once again include the currency symbol at the start of the `unit_cost` field (at least they're consistent...)!
 
 ```shell
 $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
@@ -87,19 +89,18 @@ FROM InternationalSalesRecordTable;
 
 ### Creating the Maven project
 
-First, we will create a Maven project in our home directory, and `cd` into it:
+First, we will create a blank Maven project:
 
 ```shell
-cd ~
 
 mvn archetype:generate \
-    -DgroupId=com.github.example \
-    -DartifactId=currency-converter \
+    -DgroupId=com.github.streamshub \
+    -DartifactId=flink-udf-currency-converter \
     -DarchetypeArtifactId=maven-archetype-quickstart \
     -DarchetypeVersion=1.5 \
     -DinteractiveMode=false
 
-cd ~/currency-converter
+cd ~/flink-udf-currency-converter
 ```
 
 > Note: Flink provides a [Maven Archetype and quickstart script](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/overview/#getting-started) for getting started. However, it includes a lot of dependencies and boilerplate we don't need for this tutorial, so we will start with a minimal Maven project instead.
@@ -188,7 +189,7 @@ Next, we will rename the `App` class to `CurrencyConverter` and rename the file 
 ```shell
 sed -i -e 's/App/CurrencyConverter/g' src/main/java/com/github/example/App.java
 
-mv src/main/java/com/github/example/App.java src/main/java/com/github/example/CurrencyConverter.java
+mv src/main/java/com/github/example/App.java src/main/java/com/github/streamshub/CurrencyConverter.java
 ```
 
 The project should still build and run successfully at this point, we can run the following commands to verify:
@@ -222,7 +223,9 @@ To make our UDF, we will need to extend the [`ScalarFunction`](https://nightlies
 
 > Note: Notice how we should specify the `provided` scope, in order to exclude the dependency from our JAR. We should to do this for any core Flink API dependencies we add. Otherwise, the core Flink API dependencies in our JAR [could clash with some of our other dependency versions](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/maven/#adding-dependencies-to-the-project).
 
-We don't need any external dependencies in our JAR (apart from Flink). But, if we did want to add some, we would need to either [shade them into an uber/fat JAR or add them to the classpath of the distribution](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/maven/#packaging-the-application). If you want to do the former, the [Flink docs provide a template](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/maven/#template-for-creating-an-uberfat-jar-with-dependencies) on how to use the [Maven Shade Plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html) to do so.
+We don't need any external dependencies in our JAR (apart from Flink). 
+But, if we did want to add some, we would need to either [shade them into an uber/fat JAR or add them to the classpath of the distribution](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/maven/#packaging-the-application). 
+If you want to do the former, the [Flink docs provide a template](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/maven/#template-for-creating-an-uberfat-jar-with-dependencies) on how to use the [Maven Shade Plugin](https://maven.apache.org/plugins/maven-shade-plugin/index.html) to do so.
 
 ### Extending the `ScalarFunction` base class
 
@@ -232,7 +235,7 @@ Let's start by making our `CurrencyConverter` class extend the `ScalarFunction` 
 
 ```java
 // ~/currency-converter/src/main/java/com/github/example/CurrencyConverter.java
-package com.github.example;
+package com.github.streamshub;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -257,7 +260,8 @@ public class CurrencyConverter extends ScalarFunction {
 }
 ```
 
-Flink's [Automatic Type Inference](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference) will use reflection to derive SQL data types for the argument and result of our UDF. If you want to override this behavior, you can [explicitly specify the types]((https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference)), but in this case we will keep it simple and let Flink decide for us.
+Flink's [Automatic Type Inference](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference) will use reflection to derive SQL data types for the argument and result of our UDF. 
+If you want to override this behaviour, you can [explicitly specify the types]((https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference)), but in this case we will keep it simple and let Flink decide for us.
 
 If we look at the [Data Generator](https://github.com/streamshub/flink-sql-examples/blob/main/data-generator/src/main/java/com/github/streamshub/kafka/data/generator/examples/InternationalSalesData.java) in the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository, we can see the possible currency symbols that can appear in the `unit_cost` field:
 
@@ -422,7 +426,7 @@ In order to try the UDF you will need:
 
 ### Running the UDF
 
-Since we want to try the UDF in different scenarios, we will create a container containing the Flink SQL CLI to run our queries (see the [Interactive ETL example](../interactive-etl/index.md) for details on the CLI).
+In order to use our UDF we need to create a container containing it and the Flink runtime.
 
 First, we need to port forward the Flink Job Manager pod so the Flink SQL CLI can access it:
 
@@ -482,7 +486,7 @@ AS 'com.github.example.CurrencyConverter'
 USING JAR '/opt/currency-converter-1.0-SNAPSHOT.jar';
 ```
 
-> Note: Temporary catalog functions [only live as long as the current session](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/overview/#types-of-functions). You can omit the `TEMPORARY` keyword to create a catalog function that persists across sessions.
+> Note: Temporary catalog functions [only live as long as the current session](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/overview/#types-of-functions). Provided you have a [Flink catalog](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/catalogs/#catalogs) deployed and configured, you can omit the `TEMPORARY` keyword to create a function that persists across sessions.
 
 > Note: This statement may succeed even if the JAR was not found or has insufficient permissions. You will likely only find this out when you try to use the UDF in a query.
 
