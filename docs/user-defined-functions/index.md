@@ -122,9 +122,9 @@ sed -i -e '/<dependencies>/,/<\/dependencies>/d' pom.xml
 Next, we will rename the `App` class to `CurrencyConverter` and rename the file accordingly:
 
 ```shell
-sed -i -e 's/App/CurrencyConverter/g' src/main/java/com/github/example/App.java
+sed -i -e 's/App/CurrencyConverter/g' src/main/java/com/github/streamshub/App.java
 
-mv src/main/java/com/github/example/App.java src/main/java/com/github/streamshub/CurrencyConverter.java
+mv src/main/java/com/github/streamshub/App.java src/main/java/com/github/streamshub/CurrencyConverter.java
 ```
 
 The project should still build and run successfully at this point, we can run the following commands to verify:
@@ -132,7 +132,7 @@ The project should still build and run successfully at this point, we can run th
 ```shell
 mvn clean package
 
-java -cp target/currency-converter-1.0-SNAPSHOT.jar com.github.example.CurrencyConverter
+java -cp target/currency-converter-1.0-SNAPSHOT.jar com.github.streamshub.CurrencyConverter
 # Should print "Hello World!"
 ```
 
@@ -169,7 +169,7 @@ Now that we have added the only dependency we need, we can implement our `Curren
 Let's start by making our `CurrencyConverter` class extend the `ScalarFunction` base class. We can also remove the `main` method since we won't need it:
 
 ```java
-// ~/currency-converter/src/main/java/com/github/example/CurrencyConverter.java
+// ~/currency-converter/src/main/java/com/github/streamshub/CurrencyConverter.java
 package com.github.streamshub;
 
 import org.apache.flink.table.functions.ScalarFunction;
@@ -182,7 +182,7 @@ This function doesn't do anything yet. For that, we need it to declare a public 
 Since we'll only be passing it one argument (the `unit_cost` field), we can declare that the method takes in a single `String` argument and also returns a `String`:
 
 ```java
-package com.github.example;
+package com.github.streamshub;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -209,7 +209,7 @@ By speaking to authors of the upstream services, we should be able to obtain a l
 In our UDF, we can create an `enum` that maps these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes. We will use these when converting the `unit_cost` field into our desired format.
 
 ```java
-package com.github.example;
+package com.github.streamshub;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -258,7 +258,7 @@ As a reminder, we want to convert a string like "€100" into "100 EUR". To do t
 A possible implementation could look like this:
 
 ```java
-package com.github.example;
+package com.github.streamshub;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -417,7 +417,7 @@ If that worked, we can now register our UDF as a [temporary catalog function](ht
 
 ```sql
 CREATE TEMPORARY FUNCTION currency_convert
-AS 'com.github.example.CurrencyConverter'
+AS 'com.github.streamshub.CurrencyConverter'
 USING JAR '/opt/currency-converter-1.0-SNAPSHOT.jar';
 ```
 
