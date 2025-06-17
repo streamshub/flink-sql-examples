@@ -50,9 +50,7 @@ user-1619&74772726277194883031
 ...
 ```
 
-Instead of having to deal with [Unicode currency symbols](https://www.unicode.org/charts/nameslist/n_20A0.html) in our Flink SQL queries, we can create a simple UDF to strip the currency symbol from the `unit_cost` field and add an equivalent [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency code to the end of the field instead e.g. "€192" will become "192 EUR".
-
-We will basically be replacing a cumbersome to maintain query e.g.:
+Because of that mistake, we currently have to deal with [Unicode currency symbols](https://www.unicode.org/charts/nameslist/n_20A0.html) in our Flink SQL queries, and are forced to make long and complex queries to convert the `unit_cost` field into a more usable format.
 
 ```sql
 // Think about how complex this query would become if the unit_cost field
@@ -74,7 +72,9 @@ SELECT
 FROM InternationalSalesRecordTable;
 ```
 
-with this:
+Instead, we can create a simple UDF to strip the currency symbol from the `unit_cost` field and add an equivalent [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency code to the end of the field instead e.g. "€192" will become "192 EUR".
+
+We will be replacing that cumbersome to maintain query above with something simple like this:
 
 ```sql
 SELECT
