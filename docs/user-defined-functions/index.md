@@ -316,25 +316,7 @@ After implementing the logic, we can build our JAR:
 mvn clean package
 ```
 
-There should be no compilation errors, and there should be a JAR in the `target` directory.
-
-```shell
-$ ls -lh ~/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar
--rw-r--r--. 1 <user> <user> 3.6K Jun 11 16:23 /home/<user>/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar
-```
-
-If you want be extra sure everything is there, you can check if the `CurrencyConverter` class is in the JAR and if running the JAR fails as expected:
-
-```shell
-$ jar tf ~/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar | grep "CurrencyConverter"
-com/github/example/CurrencyConverter.class
-
-$ java -cp ~/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar com.github.example.CurrencyConverter
-Error: Could not find or load main class com.github.example.CurrencyConverter
-Caused by: java.lang.NoClassDefFoundError: org/apache/flink/table/functions/ScalarFunction
-```
-
-We can now try out our new UDF!
+Assuming there are no compilation errors, we can now try out our new UDF!
 
 ## Using the User Defined Function
 
