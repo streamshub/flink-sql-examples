@@ -107,24 +107,16 @@ cd ~/flink-udf-currency-converter
 
 > Note: Flink provides a [Maven Archetype and quickstart script](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/configuration/overview/#getting-started) for getting started. However, it includes a lot of dependencies and boilerplate we don't need for this tutorial, so we will start with a minimal Maven project instead.
 
-We can remove the provided tests and their dependencies, as we don't need them for this tutorial:
+### Renaming `App` and `AppTest`
 
-```shell
-rm -r src/test
-
-sed -i -e '/<dependencyManagement>/,/<\/dependencyManagement>/d' pom.xml
-
-sed -i -e '/<dependencies>/,/<\/dependencies>/d' pom.xml
-```
-
-### Renaming the `App` class
-
-Next, we will rename the `App` class to `CurrencyConverter` and rename the file accordingly:
+Next, we will rename the `App` and `AppTest` classes to `CurrencyConverter` and `CurrencyConverterTest` respectively. We will also rename the files accordingly:
 
 ```shell
 sed -i -e 's/App/CurrencyConverter/g' src/main/java/com/github/streamshub/App.java
+sed -i -e 's/AppTest/CurrencyConverterTest/g' src/test/java/com/github/streamshub/AppTest.java
 
 mv src/main/java/com/github/streamshub/App.java src/main/java/com/github/streamshub/CurrencyConverter.java
+mv src/test/java/com/github/streamshub/AppTest.java src/test/java/com/github/streamshub/CurrencyConverterTest.java
 ```
 
 The project should still build and run successfully at this point, we can run the following commands to verify:
@@ -145,7 +137,6 @@ To make our UDF, we will need to extend the [`ScalarFunction`](https://nightlies
 ```xml
 <name>currency-converter</name>
 
-<!-- This is the only dependency we need -->
 <dependencies>
     <dependency>
         <groupId>org.apache.flink</groupId>
@@ -296,6 +287,42 @@ public class CurrencyConverter extends ScalarFunction {
 }
 ```
 
+### Testing (optional)
+
+If we want to, we can modify `CurrencyConverterTest` to verify the UDF works as expected:
+
+```java
+package com.github.streamshub;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+public class CurrencyConverterTest {
+    public static final String VALID_UNICODE_AMOUNT = " €100 ";
+    public static final String VALID_ISO_AMOUNT = "100" + Currency.SEPARATOR + Currency.EUR.getIsoCode();
+
+    public static final String INVALID_UNICODE_AMOUNT = " ]100 ";
+    public static final String INVALID_ISO_AMOUNT = "100" + Currency.SEPARATOR + Currency.ERR.getIsoCode();
+
+    @Test
+    public void shouldConvertValidUnicodeAmount() throws Exception {
+        CurrencyConverter currencyConverter = new CurrencyConverter();
+
+        assertEquals(VALID_ISO_AMOUNT, currencyConverter.eval(VALID_UNICODE_AMOUNT));
+    }
+
+    @Test
+    public void shouldConvertInvalidUnicodeAmount() throws Exception {
+        CurrencyConverter currencyConverter = new CurrencyConverter();
+
+        assertEquals(INVALID_ISO_AMOUNT, currencyConverter.eval(INVALID_UNICODE_AMOUNT));
+    }
+}
+```
+
+> Note: Since our UDF is simple and stateless, we can test its methods directly. If we would've made use of managed state or timers (e.g. for watermarks) we probably would've had to use [test harnesses](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/datastream/testing/#unit-testing-stateful-or-timely-udfs--custom-operators).
+
 ### Building the JAR
 
 After implementing the logic, we can build our JAR:
@@ -304,7 +331,7 @@ After implementing the logic, we can build our JAR:
 mvn clean package
 ```
 
-Assuming there are no compilation errors, we can now try out our new UDF!
+Assuming there are no errors, we can now try out our new UDF!
 
 ## Using the User Defined Function
 
