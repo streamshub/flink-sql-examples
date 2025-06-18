@@ -169,7 +169,6 @@ Now that we have added the only dependency we need, we can implement our `Curren
 Let's start by making our `CurrencyConverter` class extend the `ScalarFunction` base class. We can also remove the `main` method since we won't need it:
 
 ```java
-// ~/currency-converter/src/main/java/com/github/streamshub/CurrencyConverter.java
 package com.github.streamshub;
 
 import org.apache.flink.table.functions.ScalarFunction;
@@ -188,8 +187,8 @@ import org.apache.flink.table.functions.ScalarFunction;
 
 public class CurrencyConverter extends ScalarFunction {
    // (You can name the parameter whatever you like)
-   // e.g. currencyAmount = "€100"
-   public String eval(String currencyAmount) {
+   // e.g. unicodeAmount = "€100"
+   public String eval(String unicodeAmount) {
        // logic will go here
    }
 }
@@ -197,6 +196,8 @@ public class CurrencyConverter extends ScalarFunction {
 
 Flink's [Automatic Type Inference](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference) will use reflection to derive SQL data types for the argument and result of our UDF. 
 If you want to override this behaviour, you can [explicitly specify the types]((https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference)), but in this case we will keep it simple and let Flink decide for us.
+
+### Implementing the logic
 
 By speaking to authors of the upstream services, we should be able to obtain a list of currency symbols that can potentially appear in the `unit_cost` field:
 
@@ -206,46 +207,7 @@ By speaking to authors of the upstream services, we should be able to obtain a l
 >
 > — authors of the upstream services
 
-In our UDF, we can create an `enum` that maps these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes. We will use these when converting the `unit_cost` field into our desired format.
-
-```java
-package com.github.streamshub;
-
-import org.apache.flink.table.functions.ScalarFunction;
-
-public class CurrencyConverter extends ScalarFunction {
-   // https://www.unicode.org/charts/nameslist/n_20A0.html
-   // https://www.iso.org/iso-4217-currency-codes.html
-   enum Currency {
-      €("EUR"),
-      ₹("INR"),
-      ₺("TRY"),
-      ฿("THB"),
-      ₴("UAH"),
-      ₮("MNT"),
-      ERR("ERR");
-
-      private final String isoCode;
-
-      Currency(String isoCode) {
-         this.isoCode = isoCode;
-      }
-
-      public String getIsoCode() {
-         return isoCode;
-      }
-   }
-
-   // e.g. currencyAmount = "€100"
-   public String eval(String currencyAmount) {
-       // logic will go here
-   }
-}
-```
-
-### Implementing the function logic
-
-Now, we can begin implementing our function logic in the `eval` method.
+We can create an `enum` that maps these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes.
 
 As a reminder, we want to convert a string like "€100" into "100 EUR". To do this, we can use the following steps:
 
@@ -260,59 +222,76 @@ A possible implementation could look like this:
 ```java
 package com.github.streamshub;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+// https://www.unicode.org/charts/nameslist/n_20A0.html
+// https://www.iso.org/iso-4217-currency-codes.html
+public enum Currency {
+    EUR("€", "EUR"),
+    INR("₹", "INR"),
+    TRY("₺", "TRY"),
+    THB("฿", "THB"),
+    UAH("₴", "UAH"),
+    MNT("₮", "MNT"),
+    ERR("?", "ERR");
+
+    public static final String SEPARATOR = " ";
+    private static final Map<String, Currency> SYMBOL_TO_CURRENCY = Stream.of(Currency.values())
+            .collect(Collectors.toMap(Currency::getSymbol, c -> c));
+
+    private final String symbol;
+    private final String isoCode;
+
+    Currency(String symbol, String isoCode) {
+        this.symbol = symbol;
+        this.isoCode = isoCode;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public String getIsoCode() {
+        return isoCode;
+    }
+
+    public static Currency fromUnicodeAmount(String unicodeAmount) {
+        String currencySymbol = unicodeAmount.substring(0, 1); // "€100" -> "€"
+        try {
+            return SYMBOL_TO_CURRENCY.getOrDefault(currencySymbol, ERR); // "€100" -> EUR
+        } catch (Exception e) {
+            return ERR; // "]100" -> ERR
+        }
+    }
+
+    public String concatIsoCodeToAmount(String amount) {
+        return amount + SEPARATOR + isoCode; // "100" + EUR -> "100 EUR"
+    }
+
+    public static String unicodeAmountToIsoAmount(String unicodeAmount) {
+        String trimmedUnicodeAmount = unicodeAmount.trim();
+
+        Currency currency = fromUnicodeAmount(trimmedUnicodeAmount); // "€100" -> EUR
+        String amount = trimmedUnicodeAmount.substring(1); // "€100" -> "100"
+
+        return currency.concatIsoCodeToAmount(amount); // "100" + EUR -> "100 EUR"
+    }
+}
+```
+
+We can then use this `enum` in the `eval` method of our UDF:
+
+```java
+package com.github.streamshub;
+
 import org.apache.flink.table.functions.ScalarFunction;
 
 public class CurrencyConverter extends ScalarFunction {
-   // https://www.unicode.org/charts/nameslist/n_20A0.html
-   // https://www.iso.org/iso-4217-currency-codes.html
-   public enum Currency {
-      €("EUR"),
-      ₹("INR"),
-      ₺("TRY"),
-      ฿("THB"),
-      ₴("UAH"),
-      ₮("MNT"),
-      ERR("ERR");
-
-      public static final String SEPARATOR = " ";
-
-      private final String isoCode;
-
-      Currency(String isoCode) {
-         this.isoCode = isoCode;
-      }
-
-      public String getIsoCode() {
-         return isoCode;
-      }
-
-      public static Currency fromCurrencyAmount(String currencyAmount) {
-         // 1. Get the first character of the string, which is the currency symbol (e.g. '€').
-         String currencySymbol = currencyAmount.substring(0, 1);
-
-         // 2. Look up the currency symbol in our enum to get the corresponding currency code (e.g. "€" => "EUR").
-         try {
-            return Currency.valueOf(currencySymbol);
-         } catch (Exception e) {
-            // 3. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code (e.g. ">" => "ERR").
-            return Currency.ERR;
-         }
-      }
-
-      public String concatToAmount(String amount) {
-         return amount + SEPARATOR + isoCode;
-      }
-   }
-
-   // Value of passed field (e.g. "unit_cost") is passed in e.g. "€100"
-   public String eval(String currencyAmount) {
-      String currencySymbol = Currency.fromCurrencyAmount(currencyAmount);
-
-      // 4. Get the rest of the string, which is the amount (e.g. "100").
-      String amount = currencyAmount.substring(1);
-
-      // 5. Concatenate the currency code to the amount, and return the result (e.g. "100 EUR").
-      return currency.concatToAmount(amount);
+   // e.g. unicodeAmount = "€100"
+   public String eval(String unicodeAmount) {
+      return Currency.unicodeAmountToIsoAmount(unicodeAmount); // "€100" -> "100 EUR"
    }
 }
 ```
