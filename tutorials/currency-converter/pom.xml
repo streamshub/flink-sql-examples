@@ -51,6 +51,25 @@
   <build>
     <plugins>
         <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>0.46.0</version>
+            <configuration>
+                <images>
+                    <image>
+                        <name>flink-sql-runner-with-${project.artifactId}</name>
+                        <build>
+                            <from>quay.io/streamshub/flink-sql-runner:0.2.0</from>
+                            <assembly>
+                                <descriptorRef>artifact</descriptorRef>
+                                <targetDir>/opt</targetDir>
+                            </assembly>
+                        </build>
+                    </image>
+                </images>
+            </configuration>
+        </plugin>
+        <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
             <version>3.1.1</version>

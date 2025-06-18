@@ -529,3 +529,50 @@ $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
 7208742491425008088,user-87,106,3,"587 UAH","2025-06-13 11:28:32.725"
 8796404564173987612,user-70,105,1,"399 EUR","2025-06-13 11:28:35.728"
 ```
+
+## Layering the UDF on top of the `flink-sql-runner` image
+
+### Using [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin)
+
+To make it easier for others to use our UDF, we can create a new container image that layers our JAR on top of the `flink-sql-runner` image. This way, mounting our local build of the JAR into the container will no longer be necessary.
+
+Instead of writing the Dockerfile ourselves, we can automate this by adding the [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin) to our `pom.xml`:
+
+```xml
+<plugin>
+    <groupId>io.fabric8</groupId>
+    <artifactId>docker-maven-plugin</artifactId>
+    <version>0.46.0</version>
+    <configuration>
+        <images>
+            <image>
+                <name>flink-sql-runner-with-${project.artifactId}</name>
+                <build>
+                    <from>quay.io/streamshub/flink-sql-runner:0.2.0</from>
+                    <assembly>
+                        <descriptorRef>artifact</descriptorRef>
+                        <targetDir>/opt</targetDir>
+                    </assembly>
+                </build>
+            </image>
+        </images>
+    </configuration>
+</plugin>
+```
+
+We can then build the image like this:
+
+```shell
+mvn clean package docker:build
+```
+
+> Note: docker-maven-plugin uses Docker by default, if you're using Podman [you will likely need to set `DOCKER_HOST` to use podman](https://github.com/fabric8io/docker-maven-plugin/issues/1330#issuecomment-872905283).
+
+Finally, we can create a new container using the image we just built:
+
+```shell
+# We don't need to mount the JAR anymore!
+podman run -it --rm --net=host
+    currency-converter:latest
+        /opt/flink/bin/sql-client.sh embedded
+```
