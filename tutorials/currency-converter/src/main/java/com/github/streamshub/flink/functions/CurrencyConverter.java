@@ -14,6 +14,8 @@ public class CurrencyConverter extends ScalarFunction {
       ₮("MNT"),
       ERR("ERR");
 
+      public static final String SEPARATOR = " ";
+
       private final String isoCode;
 
       Currency(String isoCode) {
@@ -22,6 +24,10 @@ public class CurrencyConverter extends ScalarFunction {
 
       public String getIsoCode() {
          return isoCode;
+      }
+
+      public String concatToAmount(String amount) {
+         return amount + SEPARATOR + isoCode;
       }
    }
 
@@ -37,6 +43,6 @@ public class CurrencyConverter extends ScalarFunction {
          currency = Currency.ERR; // e.g. ">" => "ERR"
       }
 
-      return amount + " " + currency.getIsoCode(); // e.g. "100 EUR"
+      return currency.concatToAmount(amount);  // e.g. "100 EUR"
    }
 }

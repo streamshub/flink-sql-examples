@@ -265,7 +265,7 @@ import org.apache.flink.table.functions.ScalarFunction;
 public class CurrencyConverter extends ScalarFunction {
    // https://www.unicode.org/charts/nameslist/n_20A0.html
    // https://www.iso.org/iso-4217-currency-codes.html
-   enum Currency {
+   public enum Currency {
       €("EUR"),
       ₹("INR"),
       ₺("TRY"),
@@ -273,6 +273,8 @@ public class CurrencyConverter extends ScalarFunction {
       ₴("UAH"),
       ₮("MNT"),
       ERR("ERR");
+
+      public static final String SEPARATOR = " ";
 
       private final String isoCode;
 
@@ -282,6 +284,10 @@ public class CurrencyConverter extends ScalarFunction {
 
       public String getIsoCode() {
          return isoCode;
+      }
+
+      public String concatToAmount(String amount) {
+         return amount + SEPARATOR + isoCode;
       }
    }
 
@@ -303,7 +309,7 @@ public class CurrencyConverter extends ScalarFunction {
       }
 
       // 5. Concatenate the currency code to the amount, and return the result (e.g. "100 EUR").
-      return amount + " " + currency.getIsoCode(); // e.g. "100 EUR"
+      return currency.concatToAmount(amount); // e.g. "100 EUR"
    }
 }
 ```
