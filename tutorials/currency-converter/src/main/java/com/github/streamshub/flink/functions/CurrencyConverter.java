@@ -38,26 +38,31 @@ public class CurrencyConverter extends ScalarFunction {
          return isoCode;
       }
 
-      public static Currency fromCurrencyAmount(String currencyAmount) {
-         String currencySymbol = currencyAmount.substring(0, 1); // e.g. '€'
+      public static Currency fromUnicodeAmount(String unicodeAmount) {
+         String currencySymbol = unicodeAmount.substring(0, 1); // "€100" -> "€"
          try {
-            return SYMBOL_TO_CURRENCY.getOrDefault(currencySymbol, ERR);
+            return SYMBOL_TO_CURRENCY.getOrDefault(currencySymbol, ERR); // "€100" -> EUR
          } catch (Exception e) {
-            return ERR;
+            return ERR; // "]100" -> ERR
          }
       }
 
-      public String concatToAmount(String amount) {
-         return amount + SEPARATOR + isoCode;
+      public String concatIsoCodeToAmount(String amount) {
+         return amount + SEPARATOR + isoCode; // "100" + EUR -> "100 EUR"
+      }
+
+      public static String unicodeAmountToIsoAmount(String unicodeAmount) {
+         String trimmedUnicodeAmount = unicodeAmount.trim();
+
+         Currency currency = fromUnicodeAmount(trimmedUnicodeAmount); // "€100" -> EUR
+         String amount = trimmedUnicodeAmount.substring(1); // "€100" -> "100"
+
+         return currency.concatIsoCodeToAmount(amount); // "100" + EUR -> "100 EUR"
       }
    }
 
-   // e.g. currencyAmount = "€100"
-   public String eval(String currencyAmount) {
-      Currency currency = Currency.fromCurrencyAmount(currencyAmount);
-
-      String amount = currencyAmount.substring(1); // e.g. "100"
-
-      return currency.concatToAmount(amount); // e.g. "100 EUR"
+   // e.g. unicodeAmount = "€100"
+   public String eval(String unicodeAmount) {
+      return Currency.unicodeAmountToIsoAmount(unicodeAmount); // "€100" -> "100 EUR"
    }
 }
