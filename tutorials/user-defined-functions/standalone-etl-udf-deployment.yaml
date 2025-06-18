@@ -1,0 +1,71 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: standalone-etl-udf
+spec:
+  image: quay.io/streamshub/flink-sql-runner-with-currency-converter:latest
+  flinkVersion: v2_0
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/streamshub/flink-sql-runner.jar
+    args: ["
+        CREATE TABLE InternationalSalesRecordTable ( 
+            invoice_id STRING, 
+            user_id STRING, 
+            product_id STRING, 
+            quantity STRING, 
+            unit_cost STRING, 
+            `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp', 
+            WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND 
+        ) WITH ( 
+            'connector' = 'kafka',
+            'topic' = 'flink.international.sales.records', 
+            'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+            'properties.group.id' = 'international-sales-record-group', 
+            'value.format' = 'avro-confluent', 
+            'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 
+            'scan.startup.mode' = 'latest-offset'
+        );
+        CREATE FUNCTION currency_convert
+        AS 'com.github.streamshub.flink.functions.CurrencyConverter'
+        USING JAR '/opt/currency-converter-0.1.0-SNAPSHOT.jar';
+        CREATE TABLE IsoInternationalSalesRecordTable ( 
+            invoice_id STRING, 
+            user_id STRING, 
+            product_id STRING, 
+            quantity INT, 
+            iso_unit_cost STRING, 
+            purchase_time TIMESTAMP(3),
+            PRIMARY KEY (`user_id`) NOT ENFORCED
+        ) WITH ( 
+            'connector' = 'upsert-kafka', 
+            'topic' = 'flink.iso.international.sales.records', 
+            'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+            'properties.client.id' = 'sql-cleaning-client', 
+            'properties.transaction.timeout.ms' = '800000', 
+            'key.format' = 'csv', 
+            'value.format' = 'csv', 
+            'value.fields-include' = 'ALL' 
+        );
+        INSERT INTO IsoInternationalSalesRecordTable
+        SELECT 
+            invoice_id, 
+            user_id,
+            product_id,
+            CAST(quantity AS INT), 
+            currency_convert(unit_cost), 
+            purchase_time
+        FROM InternationalSalesRecordTable;
+        "]
+    parallelism: 1
+    upgradeMode: stateless

@@ -532,7 +532,7 @@ $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
 
 ## Layering the UDF on top of the `flink-sql-runner` image
 
-### Using [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin)
+### Adding [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin)
 
 To make it easier for others to use our UDF, we can create a new container image that layers our JAR on top of the `flink-sql-runner` image. This way, mounting our local build of the JAR into the container will no longer be necessary.
 
@@ -575,4 +575,111 @@ Finally, we can create a new container using the image we just built:
 podman run -it --rm --net=host
     currency-converter:latest
         /opt/flink/bin/sql-client.sh embedded
+```
+
+You can run the same Flink SQL queries as before to verify that everything works the same way.
+
+### Using the new UDF image in a `FlinkDeployment`
+
+So far, we've been using the UDF in ETL queries that would have to compete for resources with other queries running in the same Flink session cluster.
+
+Instead, like in the [Interactive ETL example](../interactive-etl/index.md), we can create a FlinkDeployment CR for deploying our queries as a stand-alone Flink Job:
+
+```yaml
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: standalone-etl-udf
+spec:
+  # Change the two lines below depending on your image
+  image: docker.io/library/flink-sql-runner-with-currency-converter:latest
+  imagePullPolicy: Never
+  flinkVersion: v2_0
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/streamshub/flink-sql-runner.jar
+    args: ["
+        CREATE TABLE InternationalSalesRecordTable ( 
+            invoice_id STRING, 
+            user_id STRING, 
+            product_id STRING, 
+            quantity STRING, 
+            unit_cost STRING, 
+            `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp', 
+            WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND 
+        ) WITH ( 
+            'connector' = 'kafka',
+            'topic' = 'flink.international.sales.records', 
+            'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+            'properties.group.id' = 'international-sales-record-group', 
+            'value.format' = 'avro-confluent', 
+            'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 
+            'scan.startup.mode' = 'latest-offset'
+        );
+        CREATE FUNCTION currency_convert
+        AS 'com.github.streamshub.flink.functions.CurrencyConverter'
+        USING JAR '/opt/currency-converter-1.0-SNAPSHOT.jar';
+        CREATE TABLE IsoInternationalSalesRecordTable ( 
+            invoice_id STRING, 
+            user_id STRING, 
+            product_id STRING, 
+            quantity INT, 
+            iso_unit_cost STRING, 
+            purchase_time TIMESTAMP(3),
+            PRIMARY KEY (`user_id`) NOT ENFORCED
+        ) WITH ( 
+            'connector' = 'upsert-kafka', 
+            'topic' = 'flink.iso.international.sales.records', 
+            'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+            'properties.client.id' = 'sql-cleaning-client', 
+            'properties.transaction.timeout.ms' = '800000', 
+            'key.format' = 'csv', 
+            'value.format' = 'csv', 
+            'value.fields-include' = 'ALL' 
+        );
+        INSERT INTO IsoInternationalSalesRecordTable
+        SELECT 
+            invoice_id, 
+            user_id,
+            product_id,
+            CAST(quantity AS INT), 
+            currency_convert(unit_cost), 
+            purchase_time
+        FROM InternationalSalesRecordTable;
+        "]
+    parallelism: 1
+    upgradeMode: stateless
+```
+
+Then use it:
+
+```shell
+# If using minikube and a local image, load the image first:
+minikube image load flink-sql-runner-with-currency-converter
+
+kubectl apply -n flink -f <path-to-flink-deployment>.yaml
+```
+
+> Note: We can also just use the provided example FlinkDeployment CR instead:
+>
+> ```shell
+> kubectl apply -n flink -f tutorials/user-defined-functions/standalone-etl-udf-deployment.yaml
+> ```
+
+Finally, we can verify that data is being written to the new topic, just like before:
+
+```shell
+kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
+    ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+    --topic flink.iso.international.sales.records
 ```
