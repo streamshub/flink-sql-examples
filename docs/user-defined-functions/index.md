@@ -250,9 +250,9 @@ Now, we can begin implementing our function logic in the `eval` method.
 As a reminder, we want to convert a string like "€100" into "100 EUR". To do this, we can use the following steps:
 
 1. Get the first character of the string, which is the currency symbol (e.g. "€").
-2. Get the rest of the string, which is the amount (e.g. "100").
-3. Look up the currency symbol in our `enum` to get the corresponding currency code (e.g. "€" => "EUR").
-4. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code.
+2. Look up the currency symbol in our `enum` to get the corresponding currency code (e.g. "€" => "EUR").
+3. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code.
+4. Get the rest of the string, which is the amount (e.g. "100").
 5. Concatenate the currency code to the amount, and return the result (e.g. "100 EUR").
 
 A possible implementation could look like this:
@@ -286,6 +286,19 @@ public class CurrencyConverter extends ScalarFunction {
          return isoCode;
       }
 
+      public static Currency fromCurrencyAmount(String currencyAmount) {
+         // 1. Get the first character of the string, which is the currency symbol (e.g. '€').
+         String currencySymbol = currencyAmount.substring(0, 1);
+
+         // 2. Look up the currency symbol in our enum to get the corresponding currency code (e.g. "€" => "EUR").
+         try {
+            return Currency.valueOf(currencySymbol);
+         } catch (Exception e) {
+            // 3. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code (e.g. ">" => "ERR").
+            return Currency.ERR;
+         }
+      }
+
       public String concatToAmount(String amount) {
          return amount + SEPARATOR + isoCode;
       }
@@ -293,23 +306,13 @@ public class CurrencyConverter extends ScalarFunction {
 
    // Value of passed field (e.g. "unit_cost") is passed in e.g. "€100"
    public String eval(String currencyAmount) {
-      // 1. Get the first character of the string, which is the currency symbol (e.g. '€').
-      String currencySymbol = currencyAmount.substring(0, 1);
+      String currencySymbol = Currency.fromCurrencyAmount(currencyAmount);
 
-      // 2. Get the rest of the string, which is the amount (e.g. "100").
+      // 4. Get the rest of the string, which is the amount (e.g. "100").
       String amount = currencyAmount.substring(1);
 
-      Currency currency;
-      try {
-         // 3. Look up the currency symbol in our enum to get the corresponding currency code (e.g. "€" => "EUR").
-         currency = Currency.valueOf(currencySymbol);
-      } catch (Exception e) {
-         // 4. If the lookup failed (e.g. currency symbol was not found), we can return "ERR" as the currency code.
-         currency = Currency.ERR; // e.g. ">" => "ERR"
-      }
-
       // 5. Concatenate the currency code to the amount, and return the result (e.g. "100 EUR").
-      return currency.concatToAmount(amount); // e.g. "100 EUR"
+      return currency.concatToAmount(amount);
    }
 }
 ```
