@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: standalone-etl-udf
 spec:
-  image: quay.io/streamshub/flink-sql-runner-with-currency-converter:latest
+  image: quay.io/streamshub/flink-sql-runner-with-flink-udf-currency-converter:latest
   flinkVersion: v2_0
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
@@ -38,7 +38,7 @@ spec:
         );
         CREATE FUNCTION currency_convert
         AS 'com.github.streamshub.flink.functions.CurrencyConverter'
-        USING JAR '/opt/currency-converter-0.1.0-SNAPSHOT.jar';
+        USING JAR '/opt/flink-udf-currency-converter-1.0-SNAPSHOT.jar';
         CREATE TABLE IsoInternationalSalesRecordTable ( 
             invoice_id STRING, 
             user_id STRING, 

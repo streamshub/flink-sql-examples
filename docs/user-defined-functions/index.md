@@ -124,7 +124,7 @@ The project should still build and run successfully at this point, we can run th
 ```shell
 mvn clean package
 
-java -cp target/currency-converter-1.0-SNAPSHOT.jar com.github.streamshub.CurrencyConverter
+java -cp target/flink-udf-currency-converter-1.0-SNAPSHOT.jar com.github.streamshub.CurrencyConverter
 # Should print "Hello World!"
 ```
 
@@ -321,7 +321,7 @@ public class CurrencyConverterTest {
 }
 ```
 
-> Note: Since our UDF is simple and stateless, we can test its methods directly. If we would've made use of managed state or timers (e.g. for watermarks) we probably would've had to use [test harnesses](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/datastream/testing/#unit-testing-stateful-or-timely-udfs--custom-operators).
+> Note: Since our UDF is simple and stateless, we can test its methods directly. If we had made use of managed state or timers (e.g. for watermarks) we would need to use the Flink [test harnesses](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/datastream/testing/#unit-testing-stateful-or-timely-udfs--custom-operators).
 
 ### Building the JAR
 
@@ -391,7 +391,7 @@ Next, we will create a container with our JAR mounted into it:
 
 ```shell
 podman run -it --rm --net=host \
-    -v ~/currency-converter/target/currency-converter-1.0-SNAPSHOT.jar:/opt/currency-converter-1.0-SNAPSHOT.jar:Z \
+    -v ~/currency-converter/target/flink-udf-currency-converter-1.0-SNAPSHOT.jar:/opt/flink-udf-currency-converter-1.0-SNAPSHOT.jar:Z \
     quay.io/streamshub/flink-sql-runner:0.2.0 \
         /opt/flink/bin/sql-client.sh embedded
 ```
@@ -432,8 +432,8 @@ If that worked, we can now register our UDF as a [temporary catalog function](ht
 
 ```sql
 CREATE TEMPORARY FUNCTION currency_convert
-AS 'com.github.streamshub.CurrencyConverter'
-USING JAR '/opt/currency-converter-1.0-SNAPSHOT.jar';
+AS 'com.github.streamshub.flink.functions.CurrencyConverter'
+USING JAR '/opt/flink-udf-currency-converter-1.0-SNAPSHOT.jar';
 ```
 
 > Note: Temporary catalog functions [only live as long as the current session](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/overview/#types-of-functions). Provided you have a [Flink catalog](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/catalogs/#catalogs) deployed and configured, you can omit the `TEMPORARY` keyword to create a function that persists across sessions.
@@ -592,7 +592,7 @@ metadata:
   name: standalone-etl-udf
 spec:
   # Change the two lines below depending on your image
-  image: docker.io/library/flink-sql-runner-with-currency-converter:latest
+  image: docker.io/library/flink-sql-runner-with-flink-udf-currency-converter:latest
   imagePullPolicy: Never
   flinkVersion: v2_0
   flinkConfiguration:
@@ -628,7 +628,7 @@ spec:
         );
         CREATE FUNCTION currency_convert
         AS 'com.github.streamshub.flink.functions.CurrencyConverter'
-        USING JAR '/opt/currency-converter-1.0-SNAPSHOT.jar';
+        USING JAR '/opt/flink-udf-currency-converter-1.0-SNAPSHOT.jar';
         CREATE TABLE IsoInternationalSalesRecordTable ( 
             invoice_id STRING, 
             user_id STRING, 
@@ -665,7 +665,7 @@ Then use it:
 
 ```shell
 # If using minikube and a local image, load the image first:
-minikube image load flink-sql-runner-with-currency-converter
+minikube image load flink-sql-runner-with-flink-udf-currency-converter
 
 kubectl apply -n flink -f <path-to-flink-deployment>.yaml
 ```
