@@ -472,7 +472,7 @@ FROM InternationalSalesRecordTable;
 
 You should start seeing results with both a `unit_cost` field and an `iso_unit_cost` field containing the output of our UDF!
 
-We can also use the UDF in more complex queries e.g. to filter for records with a specific currency and quantity:
+We can also use the UDF in more complex queries e.g. to filter for records with specific currencies and quantities:
 
 ```sql
 SELECT 
@@ -491,7 +491,7 @@ SELECT
       FROM InternationalSalesRecordTable
     )
 WHERE 
-    RIGHT(iso_unit_cost, 3) = 'EUR' AND quantity > 1;
+    quantity > 1 AND RIGHT(iso_unit_cost, 3) NOT IN ('MNT', 'ERR');
 ```
 
 > Note: This query might take a while to return results, since there are many currencies used in the data!
