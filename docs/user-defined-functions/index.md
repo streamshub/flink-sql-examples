@@ -94,7 +94,6 @@ FROM InternationalSalesRecordTable;
 First, we will create a blank Maven project:
 
 ```shell
-
 mvn archetype:generate \
     -DgroupId=com.github.streamshub \
     -DartifactId=flink-udf-currency-converter \
@@ -109,14 +108,24 @@ cd ~/flink-udf-currency-converter
 
 ### Renaming `App` and `AppTest`
 
-Next, we will rename the `App` and `AppTest` classes to `CurrencyConverter` and `CurrencyConverterTest` respectively. We will also rename the files accordingly:
+Next, we will rename the `App` and `AppTest` classes to `CurrencyConverter` and `CurrencyConverterTest` respectively. We will also rename the files accordingly and move them to a new package called `com.github.streamshub.flink.functions`:
 
 ```shell
+# Rename the classes
 sed -i -e 's/App/CurrencyConverter/g' src/main/java/com/github/streamshub/App.java
 sed -i -e 's/AppTest/CurrencyConverterTest/g' src/test/java/com/github/streamshub/AppTest.java
 
-mv src/main/java/com/github/streamshub/App.java src/main/java/com/github/streamshub/CurrencyConverter.java
-mv src/test/java/com/github/streamshub/AppTest.java src/test/java/com/github/streamshub/CurrencyConverterTest.java
+# Create new package directories
+mkdir -p src/main/java/com/github/streamshub/flink/functions
+mkdir -p src/test/java/com/github/streamshub/flink/functions
+
+# Move classes to the new package
+mv src/main/java/com/github/streamshub/App.java src/main/java/com/github/streamshub/flink/functions/CurrencyConverter.java
+mv src/test/java/com/github/streamshub/AppTest.java src/test/java/com/github/streamshub/flink/functions/CurrencyConverterTest.java
+
+# Update package declarations
+sed -i -e 's/com.github.streamshub;/com.github.streamshub.flink.functions;/' src/main/java/com/github/streamshub/flink/functions/CurrencyConverter.java
+sed -i -e 's/com.github.streamshub;/com.github.streamshub.flink.functions;/' src/test/java/com/github/streamshub/flink/functions/CurrencyConverterTest.java
 ```
 
 The project should still build and run successfully at this point, we can run the following commands to verify:
@@ -124,7 +133,7 @@ The project should still build and run successfully at this point, we can run th
 ```shell
 mvn clean package
 
-java -cp target/flink-udf-currency-converter-1.0-SNAPSHOT.jar com.github.streamshub.CurrencyConverter
+java -cp target/flink-udf-currency-converter-1.0-SNAPSHOT.jar com.github.streamshub.flink.functions.CurrencyConverter
 # Should print "Hello World!"
 ```
 
@@ -160,7 +169,7 @@ Now that we have added the only dependency we need, we can implement our `Curren
 Let's start by making our `CurrencyConverter` class extend the `ScalarFunction` base class. We can also remove the `main` method since we won't need it:
 
 ```java
-package com.github.streamshub;
+package com.github.streamshub.flink.functions;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -172,7 +181,7 @@ This function doesn't do anything yet. For that, we need it to declare a public 
 Since we'll only be passing it one argument (the `unit_cost` field), we can declare that the method takes in a single `String` argument and also returns a `String`:
 
 ```java
-package com.github.streamshub;
+package com.github.streamshub.flink.functions;
 
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -200,6 +209,12 @@ By speaking to authors of the upstream services, we should be able to obtain a l
 
 We can create an `enum` that maps these symbols to their corresponding [ISO 4217](https://www.iso.org/iso-4217-currency-codes.html) currency codes.
 
+```shell
+mkdir -p src/main/java/com/github/streamshub/flink/enums
+
+touch src/main/java/com/github/streamshub/flink/enums/Currency.java
+```
+
 As a reminder, we want to convert a string like "€100" into "100 EUR". To do this, we can use the following steps:
 
 1. Get the first character of the string, which is the currency symbol (e.g. "€").
@@ -211,7 +226,7 @@ As a reminder, we want to convert a string like "€100" into "100 EUR". To do t
 A possible implementation could look like this:
 
 ```java
-package com.github.streamshub;
+package com.github.streamshub.flink.enums;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -275,9 +290,11 @@ public enum Currency {
 We can then use this `enum` in the `eval` method of our UDF:
 
 ```java
-package com.github.streamshub;
+package com.github.streamshub.flink.functions;
 
 import org.apache.flink.table.functions.ScalarFunction;
+
+import com.github.streamshub.flink.enums.Currency;
 
 public class CurrencyConverter extends ScalarFunction {
    // e.g. unicodeAmount = "€100"
@@ -292,11 +309,13 @@ public class CurrencyConverter extends ScalarFunction {
 If we want to, we can modify `CurrencyConverterTest` to verify the UDF works as expected:
 
 ```java
-package com.github.streamshub;
+package com.github.streamshub.flink.functions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+
+import com.github.streamshub.flink.enums.Currency;
 
 public class CurrencyConverterTest {
     public static final String VALID_UNICODE_AMOUNT = " €100 ";
@@ -572,8 +591,8 @@ Finally, we can create a new container using the image we just built:
 
 ```shell
 # We don't need to mount the JAR anymore!
-podman run -it --rm --net=host
-    currency-converter:latest
+podman run -it --rm --net=host \
+    flink-sql-runner-with-flink-udf-currency-converter:latest \
         /opt/flink/bin/sql-client.sh embedded
 ```
 
