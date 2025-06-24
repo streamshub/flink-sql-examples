@@ -1,0 +1,12 @@
+{
+  "namespace": "com.github.streamshub.kafka.data.generator.schema",
+  "type": "record",
+  "name": "InternationalSales",
+  "fields": [
+    {"name": "user_id", "type": "string"},
+    {"name": "product_id",  "type": "string"},
+    {"name": "invoice_id",  "type": "string"},
+    {"name": "quantity",  "type": "string"},
+    {"name": "unit_cost",  "type": "string"}
+  ]
+}

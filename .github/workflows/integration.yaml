@@ -41,7 +41,11 @@ jobs:
           username: "${{ secrets.IMAGE_REPO_USERNAME }}"
           password: "${{ secrets.IMAGE_REPO_PASSWORD }}"
 
-      - name: Build Image
+      - name: Generate Currency Converter Dockerfile
+        working-directory: tutorials/currency-converter
+        run: mvn -B docker:build -Ddocker.buildArchiveOnly # Skip building image, just create Dockerfile
+
+      - name: Build Data Generator Image
         if: github.event_name != 'push'
         uses: docker/build-push-action@v6
         with:
@@ -49,10 +53,19 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: false
           file: tutorials/data-generator/Dockerfile
+
+      - name: Build Currency Converter Image
+        if: github.event_name != 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: tutorials/currency-converter/target/docker/flink-sql-runner-with-flink-udf-currency-converter/build/
+          platforms: linux/amd64,linux/arm64
+          push: false
+          file: tutorials/currency-converter/target/docker/flink-sql-runner-with-flink-udf-currency-converter/build/Dockerfile
     
-      - name: Image metadata
+      - name: Data Generator Image metadata
         if: github.event_name == 'push'
-        id: meta
+        id: data_generator_meta
         uses: docker/metadata-action@v5
         with:
           images: |
@@ -65,7 +78,22 @@ jobs:
             prefix=
             suffix=
 
-      - name: Build and Push Image
+      - name: Currency Converter Image metadata
+        if: github.event_name == 'push'
+        id: currency_converter_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.IMAGE_REPO_HOSTNAME }}/${{ secrets.IMAGE_REPO_NAMESPACE }}/flink-sql-runner-with-flink-udf-currency-converter
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
+
+      - name: Build and Push Data Generator Image
         if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
@@ -73,5 +101,16 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           file: tutorials/data-generator/Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.data_generator_meta.outputs.tags }}
+          labels: ${{ steps.data_generator_meta.outputs.labels }}
+
+      - name: Build and Push Currency Converter Image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: tutorials/currency-converter/target/docker/flink-sql-runner-with-flink-udf-currency-converter/build/
+          platforms: linux/amd64,linux/arm64
+          push: true
+          file: tutorials/currency-converter/target/docker/flink-sql-runner-with-flink-udf-currency-converter/build/Dockerfile
+          tags: ${{ steps.currency_converter_meta.outputs.tags }}
+          labels: ${{ steps.currency_converter_meta.outputs.labels }}
