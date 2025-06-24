@@ -553,7 +553,9 @@ $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
 
 ### Adding [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin)
 
-To make it easier for others to use our UDF, we can create a new container image that layers our JAR on top of the `flink-sql-runner` image. This way, mounting our local build of the JAR into the container will no longer be necessary.
+To make it easier for others to use our UDF, we can create a new container image that layers our JAR on top of the Streamhub [`flink-sql-runner`](https://github.com/streamshub/flink-sql) image. 
+This way, the function will be available to all users of the image without needing to have the jar file locally.
+It also allows us to deploy a standalone Flink job, which we will discuss later.
 
 Instead of writing the Dockerfile ourselves, we can automate this by adding the [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin) to our `pom.xml`:
 
@@ -612,6 +614,7 @@ metadata:
 spec:
   # Change the two lines below depending on your image
   image: docker.io/library/flink-sql-runner-with-flink-udf-currency-converter:latest
+  # This is set to Never when you have pushed/built the image directly in your Kubernetes cluster
   imagePullPolicy: Never
   flinkVersion: v2_0
   flinkConfiguration:
@@ -689,7 +692,7 @@ minikube image load flink-sql-runner-with-flink-udf-currency-converter
 kubectl apply -n flink -f <path-to-flink-deployment>.yaml
 ```
 
-> Note: We can also just use the provided example FlinkDeployment CR instead:
+> Note: We can also just use the provided example FlinkDeployment CR instead (which uses the image built from the example code in this repository):
 >
 > ```shell
 > kubectl apply -n flink -f tutorials/user-defined-functions/standalone-etl-udf-deployment.yaml
