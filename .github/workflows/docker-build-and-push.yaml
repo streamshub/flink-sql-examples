@@ -8,18 +8,16 @@ on:
       - 'pom.xml'
       - '**.java'
       - 'Dockerfile'
-    paths-ignore:
-      - 'docs/**'
-      - 'deployment-examples/**'
+      - '!docs/**'
+      - '!deployment-examples/**'
   pull_request:
     types: [ opened, synchronize, reopened ]
     paths:
       - 'pom.xml'
       - '**.java'
       - 'Dockerfile'
-    paths-ignore:
-      - 'docs/**'
-      - 'deployment-examples/**'
+      - '!docs/**'
+      - '!deployment-examples/**'
 
 jobs:
   docker-build-and-push:
