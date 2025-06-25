@@ -1,14 +1,28 @@
-name: Build
+name: Docker Build and Push
 
 on:
   push:
     branches: [ "main", "release-**" ]
     tags: [ "[0-9]+.[0-9]+.[0-9]+" ]
+    paths:
+      - 'pom.xml'
+      - '**.java'
+      - 'Dockerfile'
+    paths-ignore:
+      - 'docs/**'
+      - 'deployment-examples/**'
   pull_request:
     types: [ opened, synchronize, reopened ]
+    paths:
+      - 'pom.xml'
+      - '**.java'
+      - 'Dockerfile'
+    paths-ignore:
+      - 'docs/**'
+      - 'deployment-examples/**'
 
 jobs:
-  build:
+  docker-build-and-push:
 
     runs-on: ubuntu-latest
 
