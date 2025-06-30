@@ -553,7 +553,7 @@ $ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
 
 ### Adding [docker-maven-plugin](https://github.com/fabric8io/docker-maven-plugin)
 
-To make it easier for others to use our UDF, we can create a new container image that layers our JAR on top of the Streamhub [`flink-sql-runner`](https://github.com/streamshub/flink-sql) image. 
+To make it easier for others to use our UDF, we can create a new container image that layers our JAR on top of the StreamsHub [`flink-sql-runner`](https://github.com/streamshub/flink-sql) image. 
 This way, the function will be available to all users of the image without needing to have the jar file locally.
 It also allows us to deploy a standalone Flink job, which we will discuss later.
 
