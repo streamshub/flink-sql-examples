@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.apache.kafka.clients.CommonClientConfigs.*;
@@ -36,11 +37,23 @@ public class DataGenerator implements Runnable {
         if (Boolean.parseBoolean(System.getenv("USE_APICURIO_REGISTRY"))) {
             String registryUrl = System.getenv("REGISTRY_URL");
             Producer<String, Object> producer = new KafkaProducer<>(KafkaClientProps.avro(bootstrapServers, registryUrl));
-            send(producer, () -> dataTypes.stream().map(this::generateAvroRecord).toList());
+            send(producer, () -> generateTopicRecords(this::generateAvroRecord));
         } else {
             Producer<String, String> producer = new KafkaProducer<>(KafkaClientProps.csv(bootstrapServers));
-            send(producer, () -> dataTypes.stream().map(this::generateCsvRecord).toList());
+            send(producer, () -> generateTopicRecords(this::generateCsvRecord));
         }
+    }
+
+    private <V> List<ProducerRecord<String, V>> generateTopicRecords(Function<Data, ProducerRecord<String, V>> recordsGenerator) {
+        List<ProducerRecord<String, V>> records = new ArrayList<>();
+
+        for (Data dataType : this.dataTypes) {
+            for (int i = 0; i < dataType.batchSize(); i++) {
+                records.add(recordsGenerator.apply(dataType));
+            }
+        }
+
+        return records;
     }
 
     private void createTopics(List<String> topicNames) {
