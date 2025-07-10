@@ -75,11 +75,6 @@ user-9467&63188787247555258843
 ...
 ```
 
-| user_id | product_id | invoice_id          | quantity | unit_cost |
-|---------|------------|---------------------|----------|-----------|
-| user-11 | 188        | 3029976743068934888 | 2        | £838      |
-| user-94 | 67         | 6318878724755525884 | 3        | £971      |
-
 ### High Sale Quantities
 
 We want to detect if a user ordered a higher quantity than they usually do. This could be a sign that they made a mistake or their account has been hijacked, which could cause troubles for all parties involved if not dealt with promptly.
@@ -209,7 +204,7 @@ While useful, the query above has several flaws:
   - Limiting the `AVG()` to sales made, for example, in the past week, might be more useful.
 
 - The query would become much more complex if, for example, we only wanted to return a match if two "unusual" sales occurred one after another.
-  - We would likely have to use some elaborate combination of [`WITH_TIES`](https://learn.microsoft.com/en-us/sql/t-sql/queries/top-transact-sql?view=sql-server-ver17#with-ties), [`OVER`](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver17), and [`PARTITION BY`](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver17). Assuming they're even supported.
+  - In a typical database, we would likely have to use some combination of [`WITH_TIES`](https://learn.microsoft.com/en-us/sql/t-sql/queries/top-transact-sql?view=sql-server-ver17#with-ties), [`OVER`](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver17), and [`PARTITION BY`](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-over-clause-transact-sql?view=sql-server-ver17). Assuming those are even supported.
 
 `MATCH_RECOGNIZE` lets us easily and concisely solve these problems.
 
@@ -236,9 +231,18 @@ MATCH_RECOGNIZE (
 );
 ```
 
-[The `ORDER BY` clause is required](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#order-of-events), it allows us to search for patterns based on [different notions of time](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/concepts/time_attributes/). With streaming, this ensures the output of the query will be correct, even if some sales arrive late.
+[The `ORDER BY` clause is required](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#order-of-events), it allows us to search for patterns based on [different notions of time](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/concepts/time_attributes/).
 
-We `DEFINE` a single `SALE` ["pattern variable"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#defining-a-pattern) for our condition, then include it in our pattern. We then output both the quantity and timestamp of the unusual sale.
+- We pass it the `purchase_time` field from our `SalesRecordTable`, which contains [copies of the timestamp embedded in our source Kafka `ConsumerRecord`s, as the event time](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/connectors/datastream/kafka/#event-time-and-watermarks).
+
+- With streaming, this ensures the output of the query will be correct, even if some sales arrive late.
+
+The `DEFINE` and `MEASURES` clauses are similar to the `WHERE` and `SELECT` SQL clauses respectively.
+
+- We `DEFINE` a single `SALE` ["pattern variable"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#defining-a-pattern) with our condition, then include it in our pattern.
+  - > Note: The value of `SALE` is the row/sale which matches our `DEFINE`d condition. 
+
+- In `MEASURES`, we use the value of `SALE` to output both the quantity and timestamp of the "unusual" sale.
 
 ### Pattern navigation
 
@@ -265,7 +269,9 @@ MATCH_RECOGNIZE (
 
 ![](assets/first_last.excalidraw.svg)
 
-Notice how the `SALE` pattern variable doesn't simply hold one value, it maps to multiple rows/sales/events. We're able to pass it to the `FIRST()` and `LAST()` functions to output the quantities from both the first and second matching sale respectively. These functions are specifically referred to as ["offset functions"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#logical-offsets), since we use "logical offsets" to navigate the events mapped to a particular pattern variable.
+Notice how the `SALE` pattern variable doesn't simply hold one value, it maps to multiple rows/sales/events. We're able to pass it to the `FIRST()` and `LAST()` functions to output the quantities from both the first and second matching sale respectively.
+
+These functions are specifically referred to as ["offset functions"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#logical-offsets), since we use "logical offsets" to navigate the events mapped to a particular pattern variable.
 
 ### Useful pattern
 
@@ -278,7 +284,8 @@ MATCH_RECOGNIZE (
     PARTITION BY user_id
     ORDER BY purchase_time
     MEASURES
-        UNUSUAL_SALE.quantity AS unusual_quantity,
+        UNUSUAL_SALE.invoice_id AS unusual_invoice_id,
+        CAST(UNUSUAL_SALE.quantity AS INT) AS unusual_quantity,
         UNUSUAL_SALE.purchase_time AS unusual_tstamp,
         AVG(CAST(TYPICAL_SALE.quantity AS INT)) AS avg_quantity,
         FIRST(TYPICAL_SALE.purchase_time) AS avg_first_sale_tstamp,
@@ -353,7 +360,9 @@ This provides several benefits:
 
 ---
 
-#### `FIRST(TYPICAL_SALE.purchase_time) AS avg_first_sale_tstamp`, `LAST(...)`
+#### `MEASURES`
+
+Like in a typical SQL `SELECT`, we use this clause to specify what to output, and use values from the "pattern variables" to output information on the "unusual" sale and the `AVG()` of the typical sales.
 
 We use `FIRST()` and `LAST()` to output timestamps for the first and last sales that were used to calculate our `AVG()`. This information lets us know exactly which previous sales were used to determine an "unusual" sale. 
 
@@ -367,7 +376,7 @@ Currently, this is the only supported ["output mode"](https://nightlies.apache.o
 
 As the name suggests, it indicates to only output one row when a match is found.
 
-Once released, `ALL ROWS PER MATCH` will be able to output multiple rows instead.
+Once released, `ALL ROWS PER MATCH` will allow you to output multiple rows instead.
 
 ---
 
