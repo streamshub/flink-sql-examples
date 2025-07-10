@@ -236,7 +236,7 @@ MATCH_RECOGNIZE (
 );
 ```
 
-> Note: [The `ORDER BY` clause is required](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#order-of-events). With streaming, this ensures the output of the query will be correct even if some events arrive late.
+[The `ORDER BY` clause is required](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#order-of-events), it allows us to search for patterns based on [different notions of time](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/concepts/time_attributes/). With streaming, this ensures the output of the query will be correct, even if some sales arrive late.
 
 We `DEFINE` a single `SALE` ["pattern variable"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#defining-a-pattern) for our condition, then include it in our pattern. We then output both the quantity and timestamp of the unusual sale.
 
@@ -294,11 +294,27 @@ MATCH_RECOGNIZE (
 
 This query might look intimidating at first, but becomes easier to understand once we break it down. 
 
-`PARTITION BY user_id` is similar to `GROUP BY user_id` in the original query, it lets us calculate `AVG()` values and find matches for each user separately. Unlike with a global user average, we won't receive false positives because of users who order in large quantities often.
+---
+
+#### `ORDER BY purchase_time`
+
+Like previously mentioned, this clause allows us to look for pattens based on time. In our case, the purchase time of the sale.
+
+---
+
+#### `PARTITION BY user_id`
+
+This is similar to `GROUP BY user_id` in the original query, it lets us calculate `AVG()` values and find matches for each user separately.
+
+Unlike with a global user average, we won't receive false positives because of a minority of users who order in large quantities often.
 
 ![](assets/useful_match.excalidraw.svg)
 
-We use two "pattern variables" in `PATTERN (TYPICAL_SALE+? UNUSUAL_SALE)`:
+---
+
+#### `PATTERN (TYPICAL_SALE+? UNUSUAL_SALE)`
+
+We use two "pattern variables" in our pattern:
 
 - `TYPICAL_SALE`: We use this to match all the sales made before an "unusual" sale.
   - By not specifying a condition for this variable in `DEFINE`, the [default condition](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#define--measures) is used, which evaluates to `true` for every row/sale.
@@ -317,6 +333,50 @@ We use two "pattern variables" in `PATTERN (TYPICAL_SALE+? UNUSUAL_SALE)`:
   
     - This prevents "unusual" sales from skewing our `AVG()` and creating false positives.
 
-Unlike in our original query, we can easily use `FIRST()` and `LAST()` to output the timestamps for the first and last sales that we use to calculate our `AVG()` respectively. This information lets us know exactly which previous sales were used to determine an "unusual" sale. 
+![](assets/reluctant_quantifier.excalidraw.svg)
+
+We append `WITHIN INTERVAL '10' SECOND` after the pattern to set a ["time constraint"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#time-constraint).
+
+> Note: We use an `INTERVAL` of `10 SECOND`s for quick user feedback in this tutorial. In a real situation, you would probably use something like `WITHIN INTERVAL '1' HOUR`.
+
+This provides several benefits:
+
+- Only the sales made within the last `10 SECOND`s are used.
+  - Memory use becomes more efficient, since we can prune sales older than this.
+
+- Our `AVG()` calculation changes from a typical arithmetic mean to a [simple moving average](https://en.wikipedia.org/wiki/Moving_average).
+  - There are benefits and downsides to both approaches.
+  
+    - In our case, sales are frequent, so only using recent sales can be beneficial.
+
+![](assets/moving_average.excalidraw.svg)
+
+---
+
+#### `FIRST(TYPICAL_SALE.purchase_time) AS avg_first_sale_tstamp`, `LAST(...)`
+
+We use `FIRST()` and `LAST()` to output timestamps for the first and last sales that were used to calculate our `AVG()`. This information lets us know exactly which previous sales were used to determine an "unusual" sale. 
 
 ![](assets/avg_range.excalidraw.svg)
+
+---
+
+#### `ONE ROW PER MATCH`
+
+Currently, this is the only supported ["output mode"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#output-mode).
+
+As the name suggests, it indicates to only output one row when a match is found.
+
+Once released, `ALL ROWS PER MATCH` will be able to output multiple rows instead.
+
+---
+
+#### `AFTER MATCH SKIP PAST LAST ROW`
+
+This is pretty self-explanatory, we skip past the last row/sale of a match before looking for the next match.
+
+Other ["After Match Strategies"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#after-match-strategy) are available for skipping to different rows and pattern variable values inside the current match. However, they aren't particularly useful in our scenario.
+
+Our strategy skips past the "unusual" sale of the current match. This prevents the "unusual" sale from being wrongly used as the first "typical" sale of the next match and skewing the `AVG()`.
+
+![](assets/skip_past_last_row.excalidraw.svg)
