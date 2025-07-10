@@ -1,0 +1,80 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: standalone-etl-anomaly
+spec:
+  image: quay.io/streamshub/flink-sql-runner:0.2.0
+  flinkVersion: v2_0
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/streamshub/flink-sql-runner.jar
+    args: ["
+        CREATE TABLE SalesRecordTable ( 
+            invoice_id STRING, 
+            user_id STRING, 
+            product_id STRING, 
+            quantity STRING, 
+            unit_cost STRING, 
+            `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp', 
+            WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND 
+        ) WITH ( 
+            'connector' = 'kafka',
+            'topic' = 'flink.sales.records', 
+            'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+            'properties.group.id' = 'sales-record-group', 
+            'value.format' = 'avro-confluent', 
+            'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6', 
+            'scan.startup.mode' = 'latest-offset'
+        );
+        CREATE TABLE UnusualSalesRecordTable (
+            user_id STRING,
+            unusual_invoice_id STRING,
+            unusual_quantity INT,
+            unusual_tstamp TIMESTAMP(3),
+            avg_quantity INT,
+            avg_first_sale_tstamp TIMESTAMP(3),
+            avg_last_sale_tstamp TIMESTAMP(3),
+            PRIMARY KEY (`user_id`) NOT ENFORCED
+        ) WITH ( 
+            'connector' = 'upsert-kafka', 
+            'topic' = 'flink.unusual.sales.records', 
+            'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+            'properties.client.id' = 'sql-cleaning-client', 
+            'properties.transaction.timeout.ms' = '800000', 
+            'key.format' = 'csv', 
+            'value.format' = 'csv', 
+            'value.fields-include' = 'ALL' 
+        );
+        INSERT INTO UnusualSalesRecordTable
+        SELECT *
+        FROM SalesRecordTable
+        MATCH_RECOGNIZE (
+            PARTITION BY user_id
+            ORDER BY purchase_time
+            MEASURES
+                UNUSUAL_SALE.invoice_id AS unusual_invoice_id,
+                CAST(UNUSUAL_SALE.quantity AS INT) AS unusual_quantity,
+                UNUSUAL_SALE.purchase_time AS unusual_tstamp,
+                AVG(CAST(TYPICAL_SALE.quantity AS INT)) AS avg_quantity,
+                FIRST(TYPICAL_SALE.purchase_time) AS avg_first_sale_tstamp,
+                LAST(TYPICAL_SALE.purchase_time) AS avg_last_sale_tstamp
+            ONE ROW PER MATCH
+            AFTER MATCH SKIP PAST LAST ROW
+            PATTERN (TYPICAL_SALE+? UNUSUAL_SALE) WITHIN INTERVAL '10' SECOND
+            DEFINE
+                UNUSUAL_SALE AS
+                    UNUSUAL_SALE.quantity > AVG(CAST(TYPICAL_SALE.quantity AS INT)) * 3
+        );
+        "]
+    parallelism: 1
+    upgradeMode: stateless

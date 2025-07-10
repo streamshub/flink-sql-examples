@@ -380,3 +380,88 @@ Other ["After Match Strategies"](https://nightlies.apache.org/flink/flink-docs-r
 Our strategy skips past the "unusual" sale of the current match. This prevents the "unusual" sale from being wrongly used as the first "typical" sale of the next match and skewing the `AVG()`.
 
 ![](assets/skip_past_last_row.excalidraw.svg)
+
+## Persisting back to Kafka
+
+Just like in the [Interactive ETL tutorial](../interactive-etl/index.md), we can create a new table to persist the output of our query back to Kafka (look at that tutorial for an explanation of the steps below). This way, we don't have to run the query every time we want to find "unusual" sales.
+
+First, let's define the table, and specify `csv` as the format so we don't have to provide a schema:
+
+```sql
+CREATE TABLE UnusualSalesRecordTable (
+    user_id STRING,
+    unusual_invoice_id STRING,
+    unusual_quantity INT,
+    unusual_tstamp TIMESTAMP(3),
+    avg_quantity INT,
+    avg_first_sale_tstamp TIMESTAMP(3),
+    avg_last_sale_tstamp TIMESTAMP(3),
+    PRIMARY KEY (`user_id`) NOT ENFORCED
+) WITH ( 
+    'connector' = 'upsert-kafka', 
+    'topic' = 'flink.unusual.sales.records.interactive', 
+    'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9092', 
+    'properties.client.id' = 'sql-cleaning-client', 
+    'properties.transaction.timeout.ms' = '800000', 
+    'key.format' = 'csv', 
+    'value.format' = 'csv', 
+    'value.fields-include' = 'ALL' 
+);
+```
+
+Next, let's insert the results of our "unusual" sales pattern matching query into it:
+
+```sql
+INSERT INTO UnusualSalesRecordTable
+SELECT *
+FROM SalesRecordTable
+MATCH_RECOGNIZE (
+    PARTITION BY user_id
+    ORDER BY purchase_time
+    MEASURES
+        UNUSUAL_SALE.invoice_id AS unusual_invoice_id,
+        CAST(UNUSUAL_SALE.quantity AS INT) AS unusual_quantity,
+        UNUSUAL_SALE.purchase_time AS unusual_tstamp,
+        AVG(CAST(TYPICAL_SALE.quantity AS INT)) AS avg_quantity,
+        FIRST(TYPICAL_SALE.purchase_time) AS avg_first_sale_tstamp,
+        LAST(TYPICAL_SALE.purchase_time) AS avg_last_sale_tstamp
+    ONE ROW PER MATCH
+    AFTER MATCH SKIP PAST LAST ROW
+    PATTERN (TYPICAL_SALE+? UNUSUAL_SALE) WITHIN INTERVAL '10' SECOND
+    DEFINE
+        UNUSUAL_SALE AS
+            UNUSUAL_SALE.quantity > AVG(CAST(TYPICAL_SALE.quantity AS INT)) * 3
+);
+```
+
+Finally, we can verify the data is being written to the new topic by running the following command in a new terminal:
+
+```shell
+$ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
+  ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+    --topic flink.unusual.sales.records.interactive
+
+user-67,7850595442358871117,30,"2025-07-10 14:07:02.697",1,"2025-07-10 14:06:54.566","2025-07-10 14:07:01.679"
+user-77,787429984061010435,10,"2025-07-10 14:07:04.729",1,"2025-07-10 14:06:58.641","2025-07-10 14:07:01.672"
+user-98,3476938040725302112,20,"2025-07-10 14:07:05.751",1,"2025-07-10 14:06:56.594","2025-07-10 14:07:05.749"
+```
+
+## Converting to a stand alone Flink job
+
+The ETL query (deployed above) will have to compete for resources with other queries running in the same Flink session cluster.
+
+Instead, like in the [Interactive ETL example](../interactive-etl/index.md), we can use a `FlinkDeployment` CR for deploying our queries as a stand-alone Flink Job.
+
+There is an example `FlinkDeployment` CR (`standalone-etl-anomaly-deployment.yaml`) that we can use:
+
+```shell
+kubectl apply -n flink -f anomaly-detection/standalone-etl-anomaly-deployment.yaml
+```
+
+Finally, we can verify that data is being written to the new topic:
+
+```shell
+kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
+    ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+    --topic flink.unusual.sales.records
+```
