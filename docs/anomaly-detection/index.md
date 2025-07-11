@@ -143,7 +143,7 @@ There are many arbitrary ways we could use to define an "unusual" or "suspicious
 
 By looking at the data in the `SalesRecordTable`, we can observe that users typically order quantities between `1` and `3` (inclusive):
 
-> Note: The output from the following queries will automatically update as new sales are generated. This might feel a bit unusual if you're used to typical static SQL, but it lets us do cool stuff like calculating `COUNT()` and `AVG()` values that update in real time!
+> Note: Don't worry if the constantly changing output  in the following queries is confusing. The main thing to take away is that the values in the `avg_quantity` column stay as `2` most of the time, which means that the average quantity for each user stays as `2` even as new sales are generated and cause the calculation to update.
 
 1. Fetch all the sales and group them by user:
    
