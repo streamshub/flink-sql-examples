@@ -4,9 +4,11 @@ title = 'Anomaly Detection'
 
 > Note: This tutorial is mainly focused on anomaly detection. For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/) and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments), look at the [Interactive ETL example](../interactive-etl/index.md).
 
-[FlinkCEP](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/libs/cep/) (Complex Event Processing) is a Flink library made for finding patterns in data streams e.g. for detecting suspicious bank transactions. It can be accessed in [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/overview/) using the [`MATCH_RECOGNIZE` clause](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/). In this tutorial, we will use Flink SQL and its `MATCH_RECOGNIZE` clause to detect and report suspicious sales across many users in real-time.
+[Flink CEP](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/libs/cep/) (Complex Event Processing) is a Flink library made for finding patterns in data streams e.g. for detecting suspicious bank transactions. 
+It can be accessed in [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/overview/) using the [`MATCH_RECOGNIZE` clause](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/). 
+In this tutorial, we will use Flink SQL and its `MATCH_RECOGNIZE` clause to detect and report suspicious sales across many users in real-time.
 
-The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the `tutorials/anomaly-detection` directory.
+The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the [`tutorials/anomaly-detection`](https://github.com/streamshub/flink-sql-examples/tree/main/tutorials/anomaly-detection) directory.
 
 ## Setup
 
@@ -77,7 +79,10 @@ user-9467&63188787247555258843
 
 ### High Sale Quantities
 
-We want to detect if a user ordered a higher quantity than they usually do. This could be a sign that they made a mistake or their account has been hijacked, which could cause troubles for all parties involved if not dealt with promptly.
+We want to detect if a user ordered a higher quantity than they usually do. 
+This could be a sign that they made a mistake or their account has been hijacked, which could cause troubles for all parties involved if not dealt with promptly.
+It could also be a positive sign of increased interest in a particular product and our sales team might want to be notified.
+Regardless, it is a situation we would like to be able to spot and take action against.
 
 ![](assets/scenario.excalidraw.svg)
 
@@ -171,7 +176,8 @@ WHERE quantity > 3;
 
 > Note: This query might take a couple of seconds to return results, since the sales with high quantities are unusual.
 
-Of course, this wouldn't be a particularly good measure. Specific users might always order higher quantities than the average user.
+Of course, this wouldn't be a particularly good measure. 
+Specific users might always order higher quantities than the average user.
 
 A more useful measure would involve calculating the average sale quantity of each user, and considering a quantity "unusual" if it is, for example, 3 times higher than that user's average.
 
@@ -305,7 +311,7 @@ This query might look intimidating at first, but becomes easier to understand on
 
 #### `ORDER BY purchase_time`
 
-Like previously mentioned, this clause allows us to look for pattens based on time. In our case, the purchase time of the sale.
+As mentioned previously, this clause allows us to look for pattens based on time. In our case, the purchase time of the sale.
 
 ---
 
@@ -344,11 +350,11 @@ We use two "pattern variables" in our pattern:
 
 We append `WITHIN INTERVAL '10' SECOND` after the pattern to set a ["time constraint"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#time-constraint).
 
-> Note: We use an `INTERVAL` of `10 SECOND`s for quick user feedback in this tutorial. In a real situation, you would probably use something like `WITHIN INTERVAL '1' HOUR`.
+> Note: We use an `INTERVAL` of `10 SECOND`s for quick user feedback in this tutorial. In a real situation, you would probably use a much longer interval, for example: `WITHIN INTERVAL '1' HOUR`.
 
-This provides several benefits:
+Setting a time interval provides several benefits:
 
-- Only the sales made within the last `10 SECOND`s are used.
+- Only the sales made within the specified period are used.
   - Memory use becomes more efficient, since we can prune sales older than this.
 
 - Our `AVG()` calculation changes from a typical arithmetic mean to a [simple moving average](https://en.wikipedia.org/wiki/Moving_average).
