@@ -230,12 +230,12 @@ FROM SalesRecordTable
 MATCH_RECOGNIZE (
     ORDER BY purchase_time
     MEASURES
-        SALE.quantity AS unusual_quantity,
-        SALE.purchase_time AS unusual_tstamp
-    PATTERN (SALE)
+        UNUSUAL_SALE.quantity AS unusual_quantity,
+        UNUSUAL_SALE.purchase_time AS unusual_tstamp
+    PATTERN (UNUSUAL_SALE)
     DEFINE
-        SALE AS
-            CAST(SALE.quantity AS INT) > 3
+        UNUSUAL_SALE AS
+            CAST(UNUSUAL_SALE.quantity AS INT) > 3
 );
 ```
 
@@ -247,10 +247,10 @@ MATCH_RECOGNIZE (
 
 The `DEFINE` and `MEASURES` clauses are similar to the `WHERE` and `SELECT` SQL clauses respectively.
 
-- We `DEFINE` a single `SALE` ["pattern variable"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#defining-a-pattern) with our condition, then include it in our pattern.
-  - > Note: The value of `SALE` is the row/sale which matches our `DEFINE`d condition. 
+- We `DEFINE` a single `UNUSUAL_SALE` ["pattern variable"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#defining-a-pattern) with our condition, then include it in our pattern.
+  - > Note: The value of `UNUSUAL_SALE` is the row/sale which matches our `DEFINE`d condition. 
 
-- In `MEASURES`, we use the value of `SALE` to output both the quantity and timestamp of the "unusual" sale.
+- In `MEASURES`, we use the value of `UNUSUAL_SALE` to output both the quantity and timestamp of the "unusual" sale.
 
 ### Pattern navigation
 
@@ -264,20 +264,20 @@ FROM SalesRecordTable
 MATCH_RECOGNIZE (
     ORDER BY purchase_time
     MEASURES
-        FIRST(SALE.quantity) AS first_unusual_quantity,
-        FIRST(SALE.purchase_time) AS first_unusual_tstamp,
-        LAST(SALE.quantity) AS last_unusual_quantity,
-        LAST(SALE.purchase_time) AS last_unusual_tstamp
-    PATTERN (SALE{2})
+        FIRST(UNUSUAL_SALE.quantity) AS first_unusual_quantity,
+        FIRST(UNUSUAL_SALE.purchase_time) AS first_unusual_tstamp,
+        LAST(UNUSUAL_SALE.quantity) AS last_unusual_quantity,
+        LAST(UNUSUAL_SALE.purchase_time) AS last_unusual_tstamp
+    PATTERN (UNUSUAL_SALE{2})
     DEFINE
-        SALE AS
-            CAST(SALE.quantity AS INT) = 2
+        UNUSUAL_SALE AS
+            CAST(UNUSUAL_SALE.quantity AS INT) = 2
 );
 ```
 
 ![](assets/first_last.excalidraw.svg)
 
-Notice how the `SALE` pattern variable doesn't simply hold one value, it maps to multiple rows/sales/events. We're able to pass it to the `FIRST()` and `LAST()` functions to output the quantities from both the first and second matching sale respectively.
+Notice how the `UNUSUAL_SALE` pattern variable doesn't simply hold one value, it maps to multiple rows/sales/events. We're able to pass it to the `FIRST()` and `LAST()` functions to output the quantities from both the first and second matching sale respectively.
 
 These functions are specifically referred to as ["offset functions"](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/#logical-offsets), since we use "logical offsets" to navigate the events mapped to a particular pattern variable.
 
