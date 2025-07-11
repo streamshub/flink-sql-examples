@@ -6,7 +6,7 @@ set -e
 NAMESPACE=${1:-flink}
 KUBE_CMD=${KUBE_CMD:-kubectl}
 TIMEOUT=${TIMEOUT:-180}
-FLINK_OPERATOR_VERSION="1.12.0"
+FLINK_OPERATOR_VERSION="1.12.1"
 CERT_MANAGER_VERSION="1.17.2"
 
 printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" "${NAMESPACE}"
