@@ -9,12 +9,16 @@ import java.util.Random;
 
 public class SalesData implements Data {
     private final Random random = new Random();
+    private final static int USER_COUNT = 100;
 
     public String topic() {
         return "flink.sales.records";
     }
     public Schema schema() {
         return Sales.SCHEMA$;
+    }
+    public int batchSize() {
+        return USER_COUNT;
     }
 
     public SpecificRecord generate() {
@@ -40,7 +44,7 @@ public class SalesData implements Data {
     }
 
     private String generateUserId() {
-        return "user-" + Math.abs(random.nextInt(100));
+        return "user-" + Math.abs(random.nextInt(USER_COUNT));
     }
 
     private String generateProductId() {
@@ -48,7 +52,13 @@ public class SalesData implements Data {
     }
 
     private String generateQuantity() {
-        return String.valueOf(Math.abs(random.nextInt(3) + 1));
+        int multiplier = 1;
+
+        if (Math.abs(random.nextInt(batchSize() * 10)) < 2) {
+            multiplier = 10;
+        }
+
+        return String.valueOf(Math.abs((1 + random.nextInt(3)) * multiplier ));
     }
 
     private String generateUnitCost() {
