@@ -2,7 +2,7 @@
 title = 'Simple User Defined Functions'
 +++
 
-> Note: This tutorial is mainly focused on creating a simple [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/overview/) [User Defined Function (UDF)](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/). For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/) and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments), look at the [Interactive ETL example](../interactive-etl/index.md).
+> Note: This tutorial is mainly focused on creating a simple [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/overview/) [User Defined Function (UDF)](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/). For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/) and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments), look at the [Interactive ETL example](../interactive-etl/_index.md).
 
 [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/overview/) is a powerful tool for data exploration, manipulation and inter-connection.
 Flink SQL has many [built-in functions](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/systemfunctions/#system-built-in-functions), that allow you to extract and manipulate data from the many sources that Flink supports. 
@@ -34,7 +34,7 @@ The schema for this topic can be seen in the `data-generator/src/main/resources/
 }
 ```
 
-However, it looks like the person who owns this schema repeated the same mistake they did for the Sales schema we looked at in the [Interactive ETL example](../interactive-etl/index.md), and decided to once again include the currency symbol at the start of the `unit_cost` field (at least they're consistent...)!
+However, it looks like the person who owns this schema repeated the same mistake they did for the Sales schema we looked at in the [Interactive ETL example](../interactive-etl/_index.md), and decided to once again include the currency symbol at the start of the `unit_cost` field (at least they're consistent...)!
 
 *(Assuming you have the data generator up and running as per the instructions in the [Setup](#setup) section, you can verify this by running the following command):*
 
@@ -366,7 +366,7 @@ In order to try the UDF you will need:
 
 ### Setup
 
-> Note: If you want more information on what the steps below are doing, look at the [Interactive ETL example](../interactive-etl/index.md) setup which is almost identical.
+> Note: If you want more information on what the steps below are doing, look at the [Interactive ETL example](../interactive-etl/_index.md) setup which is almost identical.
 
 1. Spin up a [minikube](https://minikube.sigs.k8s.io/docs/) cluster:
 
@@ -498,7 +498,7 @@ WHERE
 
 ### Persisting back to Kafka
 
-Just like in the [Interactive ETL example](../interactive-etl/index.md), we can create a new table to persist the output of our query back to Kafka (look at that example for an explanation of the steps below). This way we don't have to run the query every time we want to access the formatted cost.
+Just like in the [Interactive ETL example](../interactive-etl/_index.md), we can create a new table to persist the output of our query back to Kafka (look at that example for an explanation of the steps below). This way we don't have to run the query every time we want to access the formatted cost.
 
 First, let's define the table, and specify `csv` as the format so we don't have to provide a schema:
 
@@ -604,7 +604,7 @@ You can run the same Flink SQL queries as before to verify that everything works
 
 So far, we've been using the UDF in ETL queries that would have to compete for resources with other queries running in the same Flink session cluster.
 
-Instead, like in the [Interactive ETL example](../interactive-etl/index.md), we can create a FlinkDeployment CR for deploying our queries as a stand-alone Flink Job:
+Instead, like in the [Interactive ETL example](../interactive-etl/_index.md), we can create a FlinkDeployment CR for deploying our queries as a stand-alone Flink Job:
 
 ```yaml
 apiVersion: flink.apache.org/v1beta1

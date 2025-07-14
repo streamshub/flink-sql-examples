@@ -2,7 +2,7 @@
 title = 'Anomaly Detection'
 +++
 
-> Note: This tutorial is mainly focused on anomaly detection. For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/) and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments), look at the [Interactive ETL example](../interactive-etl/index.md).
+> Note: This tutorial is mainly focused on anomaly detection. For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/) and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments), look at the [Interactive ETL example](../interactive-etl/_index.md).
 
 [Flink CEP](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/libs/cep/) (Complex Event Processing) is a Flink library made for finding patterns in data streams e.g. for detecting suspicious bank transactions. 
 It can be accessed in [Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/overview/) using the [`MATCH_RECOGNIZE` clause](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/sql/queries/match_recognize/). 
@@ -12,7 +12,7 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 
 ## Setup
 
-> Note: If you want more information on what the steps below are doing, look at the [Interactive ETL example](../interactive-etl/index.md) setup which is almost identical.
+> Note: If you want more information on what the steps below are doing, look at the [Interactive ETL example](../interactive-etl/_index.md) setup which is almost identical.
 
 1. Spin up a [minikube](https://minikube.sigs.k8s.io/docs/) cluster:
 
@@ -400,7 +400,7 @@ Our strategy skips past the "unusual" sale of the current match. This prevents t
 
 ## Persisting back to Kafka
 
-Just like in the [Interactive ETL tutorial](../interactive-etl/index.md), we can create a new table to persist the output of our query back to Kafka (look at that tutorial for an explanation of the steps below). This way, we don't have to run the query every time we want to find "unusual" sales.
+Just like in the [Interactive ETL tutorial](../interactive-etl/_index.md), we can create a new table to persist the output of our query back to Kafka (look at that tutorial for an explanation of the steps below). This way, we don't have to run the query every time we want to find "unusual" sales.
 
 First, let's define the table, and specify `csv` as the format so we don't have to provide a schema:
 
@@ -467,7 +467,7 @@ user-98,3476938040725302112,20,"2025-07-10 14:07:05.751",1,"2025-07-10 14:06:56.
 
 The ETL query (deployed above) will have to compete for resources with other queries running in the same Flink session cluster.
 
-Instead, like in the [Interactive ETL example](../interactive-etl/index.md), we can use a `FlinkDeployment` CR for deploying our queries as a stand-alone Flink Job.
+Instead, like in the [Interactive ETL example](../interactive-etl/_index.md), we can use a `FlinkDeployment` CR for deploying our queries as a stand-alone Flink Job.
 
 There is an example `FlinkDeployment` CR (`standalone-etl-anomaly-deployment.yaml`) that we can use:
 
