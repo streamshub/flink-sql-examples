@@ -363,6 +363,6 @@ In order to run this example you will need:
     user-15,"26,171,1,190,87,32","2024-06-28 13:02:10"
     ```
     The expected format of the result is `userId`, `comma separated 6 product ids` and `timestamp` of the window. 
-1.  You can also deploy Prometheus to monitor the metrics inside job manager and task manager following steps [here](../../deployment-examples/prometheus-install/README.md).
+1.  You can also deploy Prometheus to monitor the metrics inside job manager and task manager by following the steps [here](https://www.streamshub.io/docs/Flink-SQL-Runner/main/#_monitoring_metrics).
 
        
