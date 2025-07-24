@@ -43,7 +43,13 @@ if ${KUBE_CMD} -n "${NAMESPACE}" get deployment flink-kubernetes-operator ; then
     printf "\e[32mFlink Operator already installed\e[0m\n"
 else
     printf "\e[32mInstalling the Flink Operator\e[0m\n"
-    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator --set podSecurityContext=null -n "${NAMESPACE}"
+    helm install flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator \
+      --set podSecurityContext=null \
+      --set defaultConfiguration."log4j-operator\.properties"=monitorInterval\=30 \
+      --set defaultConfiguration."log4j-console\.properties"=monitorInterval\=30 \
+      --set defaultConfiguration."flink-conf\.yaml"="kubernetes.operator.metrics.reporter.prom.factory.class\:\ org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+       kubernetes.operator.metrics.reporter.prom.port\:\ 9249 " \
+      -n "${NAMESPACE}"
 fi
 
 printf "\n\e[32mChecking for Strimzi Operator install\e[0m\n"
