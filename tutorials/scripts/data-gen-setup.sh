@@ -60,8 +60,11 @@ else
     ${KUBE_CMD} create -f 'https://strimzi.io/install/latest?namespace=flink' -n "${NAMESPACE}"
 fi
 
-printf "\n\e[32mCreating Kafka cluster\e[0m\n"
-${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml -n "${NAMESPACE}"
+printf "\n\e[32mCreating Kafka pool\e[0m\n"
+${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+
+printf "\n\e[32mCreating Kafka cluster (Plain + TLS)\e[0m\n"
+${KUBE_CMD} apply -f secure-kafka/tls/kafka-tls.yaml -n "${NAMESPACE}"
 
 printf "\n\e[32mWaiting for Kafka to be ready...\e[0m\n"
 ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Ready --timeout="${TIMEOUT}"s kafka my-cluster
