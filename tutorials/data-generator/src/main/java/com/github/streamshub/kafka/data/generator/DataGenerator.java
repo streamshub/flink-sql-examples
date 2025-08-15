@@ -16,27 +16,17 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.CLIENT_ID_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.common.config.TopicConfig.RETENTION_MS_CONFIG;
 
 public class DataGenerator implements Runnable {
-    final static Map<String, String> RETENTION_CONFIG = Collections.singletonMap(RETENTION_MS_CONFIG, String.valueOf(60 * 60 * 1000)); // 1 hour
-    final static int KAFKA_ADMIN_CLIENT_REQUEST_TIMEOUT_MS_CONFIG = 5000;
-    final static String KAFKA_ADMIN_CLIENT_ID_CONFIG = "data-generator-admin-client";
-    final String bootstrapServers;
+    static final Map<String, String> RETENTION_CONFIG = Collections.singletonMap(RETENTION_MS_CONFIG, String.valueOf(60 * 60 * 1000)); // 1 hour
     final List<Data> dataTypes;
     final Properties kafkaAdminProps;
 
-    public DataGenerator(String bootstrapServers, List<Data> dataTypes) {
-        this.bootstrapServers = bootstrapServers;
+    public DataGenerator(List<Data> dataTypes) {
         this.dataTypes = dataTypes;
 
-        kafkaAdminProps = new Properties();
-        kafkaAdminProps.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        kafkaAdminProps.put(CLIENT_ID_CONFIG, KAFKA_ADMIN_CLIENT_ID_CONFIG);
-        kafkaAdminProps.put(REQUEST_TIMEOUT_MS_CONFIG, String.valueOf(KAFKA_ADMIN_CLIENT_REQUEST_TIMEOUT_MS_CONFIG));
+        kafkaAdminProps = KafkaAdminProps.get();
     }
 
     @Override
@@ -45,10 +35,10 @@ public class DataGenerator implements Runnable {
 
         if (Boolean.parseBoolean(System.getenv("USE_APICURIO_REGISTRY"))) {
             String registryUrl = System.getenv("REGISTRY_URL");
-            Producer<String, Object> producer = new KafkaProducer<>(KafkaClientProps.avro(bootstrapServers, registryUrl));
+            Producer<String, Object> producer = new KafkaProducer<>(KafkaClientProps.avro(registryUrl));
             send(producer, () -> generateTopicRecords(this::generateAvroRecord));
         } else {
-            Producer<String, String> producer = new KafkaProducer<>(KafkaClientProps.csv(bootstrapServers));
+            Producer<String, String> producer = new KafkaProducer<>(KafkaClientProps.csv());
             send(producer, () -> generateTopicRecords(this::generateCsvRecord));
         }
     }
