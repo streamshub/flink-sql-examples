@@ -8,6 +8,7 @@ KUBE_CMD=${KUBE_CMD:-kubectl}
 TIMEOUT=${TIMEOUT:-180}
 FLINK_OPERATOR_VERSION="1.12.1"
 CERT_MANAGER_VERSION="1.18.2"
+SECURE_KAFKA=${SECURE_KAFKA:-"PLAINTEXT"}
 
 printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" "${NAMESPACE}"
 
@@ -60,11 +61,47 @@ else
     ${KUBE_CMD} create -f 'https://strimzi.io/install/latest?namespace=flink' -n "${NAMESPACE}"
 fi
 
-printf "\n\e[32mCreating Kafka pool\e[0m\n"
-${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+case $SECURE_KAFKA in
+  "PLAINTEXT")
+    printf "\n\e[32mCreating Kafka pool and cluster (PLAINTEXT)\e[0m\n"
+    ${KUBE_CMD} apply -f https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml -n "${NAMESPACE}"
+    ;;
 
-printf "\n\e[32mCreating Kafka cluster (Plain + TLS)\e[0m\n"
-${KUBE_CMD} apply -f secure-kafka/tls/kafka-tls.yaml -n "${NAMESPACE}"
+  "TLS")
+    printf "\n\e[32mCreating Kafka pool (TLS)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka cluster (TLS)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/TLS/kafka.yaml -n "${NAMESPACE}"
+    ;;
+
+  "mTLS")
+    printf "\n\e[32mCreating Kafka pool (mTLS)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka cluster (mTLS)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/mTLS/kafka.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka user (mTLS)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/mTLS/kafka-user.yaml -n "${NAMESPACE}"
+    ;;
+
+  "SCRAM")
+    printf "\n\e[32mCreating Kafka pool (SCRAM)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka cluster (SCRAM)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/SCRAM/kafka.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka user (SCRAM)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/SCRAM/kafka-user.yaml -n "${NAMESPACE}"
+    ;;
+
+  *)
+    printf "\n\e[31mError: Unknown value passed for SECURE_KAFKA environment variable.\e[0m\n"
+    exit 1
+    ;;
+esac
 
 printf "\n\e[32mWaiting for Kafka to be ready...\e[0m\n"
 ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Ready --timeout="${TIMEOUT}"s kafka my-cluster
@@ -81,14 +118,43 @@ fi
 printf "\n\e[32mWaiting for Apicurio to be ready...\e[0m\n"
 ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Available --timeout="${TIMEOUT}"s deployment apicurio-registry
 
-printf "\n\e[32mChecking for data generator configuration file\e[0m\n"
-if [ -f "recommendation-app/data-generator.yaml" ]; then
-    printf "\n\e[32mDeploying data generation application...\e[0m\n"
-    ${KUBE_CMD} -n "${NAMESPACE}" apply -f recommendation-app/data-generator.yaml
-else
-    printf "\n\e[31mError: recommendation-app/data-generator.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
+case $SECURE_KAFKA in
+  "PLAINTEXT")
+    printf "\n\e[32mChecking for data generator configuration file\e[0m\n"
+    if [ -f "recommendation-app/data-generator.yaml" ]; then
+        printf "\n\e[32mDeploying data generation application...\e[0m\n"
+        ${KUBE_CMD} -n "${NAMESPACE}" apply -f recommendation-app/data-generator.yaml
+    else
+        printf "\n\e[31mError: recommendation-app/data-generator.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
+        exit 1
+    fi
+    ;;
+
+  "TLS" | "mTLS" | "SCRAM")
+    printf "\n\e[32mChecking for secure data generator kafka user configuration file\e[0m\n"
+    if [ -f "secure-kafka/data-generator/kafka-user.yaml" ]; then
+        printf "\n\e[32mCreating secure data generation kafka user...\e[0m\n"
+        ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/kafka-user.yaml
+    else
+        printf "\n\e[31mError: secure-kafka/data-generator/kafka-user.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
+        exit 1
+    fi
+
+    printf "\n\e[32mChecking for secure data generator configuration file\e[0m\n"
+    if [ -f "secure-kafka/data-generator/data-generator.yaml" ]; then
+        printf "\n\e[32mDeploying secure data generation application...\e[0m\n"
+        ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/data-generator.yaml
+    else
+        printf "\n\e[31mError: secure-kafka/data-generator/data-generator.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
+        exit 1
+    fi
+    ;;
+
+  *)
+    printf "\n\e[31mError: Unknown value passed for SECURE_KAFKA environment variable.\e[0m\n"
     exit 1
-fi
+    ;;
+esac
 
 printf "\n\e[32mWaiting for Flink operator to be ready...\e[0m\n"
 ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Available --timeout="${TIMEOUT}"s deployment flink-kubernetes-operator
