@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-app-data
+  labels:
+    app: recommendation-app-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation-app-data
+  template:
+    metadata:
+      labels:
+        app: recommendation-app-data
+    spec:
+      containers:
+        - name: data-generator
+          image: quay.io/streamshub/flink-examples-data-generator:main
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "my-cluster-kafka-bootstrap.flink.svc:9093"
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: "SSL"
+            - name: KAFKA_SSL_TRUSTSTORE_LOCATION
+              value: "/opt/my-cluster-cluster-ca-cert/ca.crt"
+            - name: KAFKA_SSL_TRUSTSTORE_TYPE
+              value: "PEM"
+            - name: KAFKA_SSL_KEYSTORE_LOCATION
+              value: "/opt/recommendation-app-kafka-user/user.p12"
+            - name: KAFKA_SSL_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: recommendation-app-kafka-user
+                  key: user.password
+            - name: DATA
+              value: "clickStream,sales,internationalSales"
+            - name: USE_APICURIO_REGISTRY
+              value: "true"
+            - name: REGISTRY_URL
+              value: "http://apicurio-registry-service.flink.svc:8080/apis/registry/v2"
+          volumeMounts:
+            - name: my-cluster-cluster-ca-cert
+              mountPath: "/opt/my-cluster-cluster-ca-cert"
+              readOnly: true
+            - name: recommendation-app-kafka-user
+              mountPath: "/opt/recommendation-app-kafka-user"
+              readOnly: true
+      volumes:
+        - name: my-cluster-cluster-ca-cert
+          secret:
+            secretName: my-cluster-cluster-ca-cert
+            items:
+              - key: ca.crt
+                path: ca.crt
+        - name: recommendation-app-kafka-user
+          secret:
+            secretName: recommendation-app-kafka-user
+            items:
+              - key: user.p12
+                path: user.p12
