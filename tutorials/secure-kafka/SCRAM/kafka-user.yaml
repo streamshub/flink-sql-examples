@@ -1,0 +1,20 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  name: my-user
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  # spec.authorization.acls is required for topic access
+  # if simple Kafka spec.kafka.authorization was specified
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: flink.sales.records
+        operations:
+          - Describe
+          - Read
