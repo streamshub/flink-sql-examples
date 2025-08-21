@@ -97,6 +97,32 @@ case $SECURE_KAFKA in
     ${KUBE_CMD} apply -f secure-kafka/SCRAM/kafka-user.yaml -n "${NAMESPACE}"
     ;;
 
+  "OAuth2")
+    printf "\n\e[32mCreating Kafka pool (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating self-signed Keycloak TLS certificate using cert-manager (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak-cert.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for self-signed Keycloak TLS certificate Secret to be generated (OAuth2)\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret keycloak-cert
+
+    printf "\n\e[32mCreating Keycloak realm \"kafka-authz-realm\" ConfigMap (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/keycloak/kafka-authz-realm.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Keycloak deployment (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for Keycloak pod to be ready (OAuth2)\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Ready --timeout="${TIMEOUT}"s pod keycloak-0
+
+    printf "\n\e[32mCreating Kafka cluster (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka user (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka-user.yaml -n "${NAMESPACE}"
+    ;;
+
   *)
     printf "\n\e[31mError: Unknown value passed for SECURE_KAFKA environment variable.\e[0m\n"
     exit 1
@@ -130,7 +156,7 @@ case $SECURE_KAFKA in
     fi
     ;;
 
-  "TLS" | "mTLS" | "SCRAM")
+  "TLS" | "mTLS" | "SCRAM" | "OAuth2")
     printf "\n\e[32mChecking for secure data generator kafka user configuration file\e[0m\n"
     if [ -f "secure-kafka/data-generator/kafka-user.yaml" ]; then
         printf "\n\e[32mCreating secure data generation kafka user...\e[0m\n"
@@ -139,6 +165,8 @@ case $SECURE_KAFKA in
         printf "\n\e[31mError: secure-kafka/data-generator/kafka-user.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
         exit 1
     fi
+
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret recommendation-app-kafka-user
 
     printf "\n\e[32mChecking for secure data generator configuration file\e[0m\n"
     if [ -f "secure-kafka/data-generator/data-generator.yaml" ]; then

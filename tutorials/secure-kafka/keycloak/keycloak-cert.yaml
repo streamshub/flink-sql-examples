@@ -1,0 +1,47 @@
+# Taken from https://cert-manager.io/docs/configuration/selfsigned/
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-selfsigned-ca
+spec:
+  isCA: true
+  commonName: my-selfsigned-ca
+  secretName: my-selfsigned-ca-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: my-selfsigned-ca-issuer
+spec:
+  ca:
+    secretName: my-selfsigned-ca-secret
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: keycloak-cert
+spec:
+  secretName: keycloak-cert
+  issuerRef:
+    name: my-selfsigned-ca-issuer
+    kind: Issuer
+  dnsNames:
+    - keycloak.flink.svc.cluster.local
+    - keycloak.flink.svc
