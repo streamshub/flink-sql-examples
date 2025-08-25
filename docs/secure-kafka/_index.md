@@ -171,5 +171,34 @@ CREATE TABLE SalesRecordTable (
 );
 ```
 
+## Custom
+
+Get `user.password` from `my-user` secret.
+
+```sql
+CREATE TABLE SalesRecordTable (
+    invoice_id STRING,
+    user_id STRING,
+    product_id STRING,
+    quantity STRING,
+    unit_cost STRING,
+    `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp',
+    WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND
+) WITH ( 
+    'connector' = 'kafka',
+    'topic' = 'flink.sales.records',
+    'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9094',
+    'properties.security.protocol' = 'SSL',
+    'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
+    'properties.ssl.truststore.type' = 'PEM',
+    'properties.ssl.keystore.location' = '/opt/my-user-custom-cert/keystore.p12',
+    'properties.ssl.keystore.password' = '123', -- REPLACE THIS
+    'properties.group.id' = 'sales-record-group',
+    'value.format' = 'avro-confluent',
+    'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6',
+    'scan.startup.mode' = 'latest-offset'
+);
+```
+
 ## Conclusion / Differences / Comparison Table
 

@@ -1,0 +1,58 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: my-cluster
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
+spec:
+  kafka:
+    version: 4.0.0
+    metadataVersion: 4.0-IV3
+    listeners:
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: tls
+      - name: custom
+        port: 9094
+        type: internal
+        tls: true
+        authentication:
+          type: custom
+          sasl: false
+          listenerConfig:
+            ssl.client.auth: required
+            ssl.truststore.location: /mnt/my-user-custom-cert/ca.crt
+            ssl.truststore.type: PEM
+#            ssl.principal.mapping.rules: RULE:^CN=(.*?),(.*)$/$1@my-cluster.com/
+    # You can remove spec.kafka.authorization
+    # to grant all users unlimited access rights
+    authorization:
+      type: simple
+      superUsers:
+        - CN=recommendation-app-kafka-user
+    template:
+      pod:
+        volumes:
+          - name: my-user-custom-cert
+            secret:
+              secretName: my-user-custom-cert
+              items:
+                - key: ca.crt
+                  path: ca.crt
+      kafkaContainer:
+        volumeMounts:
+          - name: my-user-custom-cert
+            mountPath: /mnt/my-user-custom-cert
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}

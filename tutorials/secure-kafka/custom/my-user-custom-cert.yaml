@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-user-custom-cert-password
+type: Opaque
+stringData:
+  password: "a36gAa6erkq2"
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-user-custom-cert
+spec:
+  secretName: my-user-custom-cert
+  issuerRef:
+    name: my-selfsigned-ca-issuer
+    kind: Issuer
+  commonName: my-user
+  keystores:
+    pkcs12:
+      create: true
+      password: "123"
+#      passwordSecretRef:
+#        name: my-user-custom-cert-password
+#        key: password

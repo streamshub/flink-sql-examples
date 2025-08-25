@@ -101,6 +101,9 @@ case $SECURE_KAFKA in
     printf "\n\e[32mCreating Kafka pool (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
 
+    printf "\n\e[32mCreating self-signed CA issuer using cert-manager (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/selfsigned-ca.yaml -n "${NAMESPACE}"
+
     printf "\n\e[32mCreating self-signed Keycloak TLS certificate using cert-manager (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak-cert.yaml -n "${NAMESPACE}"
 
@@ -121,6 +124,23 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka-user.yaml -n "${NAMESPACE}"
+    ;;
+
+  "custom")
+    printf "\n\e[32mCreating Kafka pool (custom)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating self-signed CA issuer using cert-manager (custom)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/selfsigned-ca.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating self-signed custom user TLS certificate for using cert-manager (custom)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/custom/my-user-custom-cert.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka cluster (custom)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/custom/kafka.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mCreating Kafka user (custom)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/custom/kafka-user.yaml -n "${NAMESPACE}"
     ;;
 
   *)
@@ -156,7 +176,7 @@ case $SECURE_KAFKA in
     fi
     ;;
 
-  "TLS" | "mTLS" | "SCRAM" | "OAuth2")
+  "TLS" | "mTLS" | "SCRAM" | "OAuth2" | "custom")
     printf "\n\e[32mChecking for secure data generator kafka user configuration file\e[0m\n"
     if [ -f "secure-kafka/data-generator/kafka-user.yaml" ]; then
         printf "\n\e[32mCreating secure data generation kafka user...\e[0m\n"
