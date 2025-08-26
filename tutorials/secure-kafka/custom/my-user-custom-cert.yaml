@@ -20,7 +20,6 @@ spec:
   keystores:
     pkcs12:
       create: true
-      password: "123"
-#      passwordSecretRef:
-#        name: my-user-custom-cert-password
-#        key: password
+      passwordSecretRef:
+        name: my-user-custom-cert-password
+        key: password
