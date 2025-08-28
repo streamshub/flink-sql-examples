@@ -61,6 +61,14 @@ else
     ${KUBE_CMD} create -f 'https://strimzi.io/install/latest?namespace=flink' -n "${NAMESPACE}"
 fi
 
+printf "\n\e[32mChecking current script is being ran from the tutorial directory\e[0m\n"
+if [ -f "scripts/data-gen-setup.sh" ]; then
+    printf "\e[32mFound scripts/data-gen-setup.sh\e[0m\n"
+else
+    printf "\e[31mError: scripts/data-gen-setup.sh file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
+    exit 1
+fi
+
 case $SECURE_KAFKA in
   "PLAINTEXT")
     printf "\n\e[32mCreating Kafka pool and cluster (PLAINTEXT)\e[0m\n"
@@ -152,50 +160,26 @@ esac
 printf "\n\e[32mWaiting for Kafka to be ready...\e[0m\n"
 ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Ready --timeout="${TIMEOUT}"s kafka my-cluster
 
-printf "\n\e[32mChecking for Apicurio Registry configuration file\e[0m\n"
-if [ -f "apicurio-registry.yaml" ]; then
-    printf "\n\e[32mInstalling Apicurio Registry\e[0m\n"
-    ${KUBE_CMD} apply -f apicurio-registry.yaml -n "${NAMESPACE}"
-else
-    printf "\n\e[31mError: apicurio-registry.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
-    exit 1
-fi
+printf "\n\e[32mInstalling Apicurio Registry\e[0m\n"
+${KUBE_CMD} apply -f apicurio-registry.yaml -n "${NAMESPACE}"
 
 printf "\n\e[32mWaiting for Apicurio to be ready...\e[0m\n"
 ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Available --timeout="${TIMEOUT}"s deployment apicurio-registry
 
 case $SECURE_KAFKA in
   "PLAINTEXT")
-    printf "\n\e[32mChecking for data generator configuration file\e[0m\n"
-    if [ -f "recommendation-app/data-generator.yaml" ]; then
-        printf "\n\e[32mDeploying data generation application...\e[0m\n"
-        ${KUBE_CMD} -n "${NAMESPACE}" apply -f recommendation-app/data-generator.yaml
-    else
-        printf "\n\e[31mError: recommendation-app/data-generator.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
-        exit 1
-    fi
+    printf "\n\e[32mDeploying data generation application...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" apply -f recommendation-app/data-generator.yaml
     ;;
 
   "TLS" | "mTLS" | "SCRAM" | "OAuth2" | "custom")
-    printf "\n\e[32mChecking for secure data generator kafka user configuration file\e[0m\n"
-    if [ -f "secure-kafka/data-generator/kafka-user.yaml" ]; then
-        printf "\n\e[32mCreating secure data generation kafka user...\e[0m\n"
-        ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/kafka-user.yaml
-    else
-        printf "\n\e[31mError: secure-kafka/data-generator/kafka-user.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
-        exit 1
-    fi
+    printf "\n\e[32mCreating secure data generation kafka user...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/kafka-user.yaml
 
     ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret recommendation-app-kafka-user
 
-    printf "\n\e[32mChecking for secure data generator configuration file\e[0m\n"
-    if [ -f "secure-kafka/data-generator/data-generator.yaml" ]; then
-        printf "\n\e[32mDeploying secure data generation application...\e[0m\n"
-        ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/data-generator.yaml
-    else
-        printf "\n\e[31mError: secure-kafka/data-generator/data-generator.yaml file not found. Please make sure to run this script from the tutorial directory.\e[0m\n"
-        exit 1
-    fi
+    printf "\n\e[32mDeploying secure data generation application...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/data-generator.yaml
     ;;
 
   *)
