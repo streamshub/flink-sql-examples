@@ -1,12 +1,10 @@
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
 metadata:
-  name: my-user
+  name: service-account-kafka
   labels:
     strimzi.io/cluster: my-cluster
 spec:
-  authentication:
-    type: tls
   # spec.authorization.acls is required for topic access
   # if simple Kafka spec.kafka.authorization was specified
   authorization:

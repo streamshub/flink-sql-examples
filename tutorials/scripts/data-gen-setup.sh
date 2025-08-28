@@ -140,7 +140,7 @@ case $SECURE_KAFKA in
     ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka-user.yaml -n "${NAMESPACE}"
 
     printf "\n\e[32mWaiting for kafka user Secret to be generated (OAuth2)...\e[0m\n"
-    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret my-user
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret service-account-kafka
     ;;
 
   "custom")
