@@ -92,6 +92,9 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (mTLS)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/mTLS/kafka-user.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for kafka user Secret to be generated (mTLS)...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret my-user
     ;;
 
   "SCRAM")
@@ -103,6 +106,9 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (SCRAM)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/SCRAM/kafka-user.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for kafka user Secret to be generated (SCRAM)...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret my-user
     ;;
 
   "OAuth2")
@@ -132,6 +138,9 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka-user.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for kafka user Secret to be generated (OAuth2)...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret my-user
     ;;
 
   "custom")
@@ -149,6 +158,9 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (custom)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/custom/kafka-user.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for kafka user Secret to be generated (custom)...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret my-user
     ;;
 
   *)
@@ -176,6 +188,7 @@ case $SECURE_KAFKA in
     printf "\n\e[32mCreating secure data generation kafka user...\e[0m\n"
     ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/kafka-user.yaml
 
+    printf "\n\e[32mWaiting for kafka user Secret to be generated...\e[0m\n"
     ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret recommendation-app-kafka-user
 
     printf "\n\e[32mDeploying secure data generation application...\e[0m\n"
