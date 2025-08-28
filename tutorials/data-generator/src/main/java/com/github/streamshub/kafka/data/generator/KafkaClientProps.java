@@ -8,15 +8,17 @@ import io.apicurio.registry.serde.config.IdOption;
 import java.util.Properties;
 
 public class KafkaClientProps {
-    public static Properties csv(String bootstrapServers) {
-        Properties props = init(bootstrapServers);
+    static final String KAFKA_CLIENT_ID_CONFIG = "data-generator-client";
+
+    public static Properties csv() {
+        Properties props = KafkaCommonProps.get(KAFKA_CLIENT_ID_CONFIG);
         props.put("value.serializer",
                 "org.apache.kafka.common.serialization.StringSerializer");
         return props;
     }
 
-    public static Properties avro(String bootstrapServers, String registryUrl) {
-        Properties props = init(bootstrapServers);
+    public static Properties avro(String registryUrl) {
+        Properties props = KafkaCommonProps.get(KAFKA_CLIENT_ID_CONFIG);
         props.put("value.serializer", AvroKafkaSerializer.class.getName());
 
         props.put(SerdeConfig.REGISTRY_URL, registryUrl);
@@ -26,15 +28,6 @@ public class KafkaClientProps {
         props.putIfAbsent(SerdeConfig.AUTO_REGISTER_ARTIFACT, Boolean.TRUE);
         props.putIfAbsent(SerdeConfig.AUTO_REGISTER_ARTIFACT_IF_EXISTS, IfExists.RETURN.name());
 
-        return props;
-    }
-
-    private static Properties init(String bootstrapServer) {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", bootstrapServer);
-
-        props.put("key.serializer",
-                "org.apache.kafka.common.serialization.StringSerializer");
         return props;
     }
 }
