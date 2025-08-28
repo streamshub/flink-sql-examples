@@ -18,3 +18,11 @@ spec:
         operations:
           - Describe
           - Read
+      - resource:
+          type: topic
+          name: flink.scram.auth.sales.records
+        operations:
+          - Describe
+          - Create
+          - Write
+          - Read
