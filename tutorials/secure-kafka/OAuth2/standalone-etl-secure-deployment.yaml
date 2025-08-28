@@ -75,7 +75,7 @@ spec:
                     PRIMARY KEY (`user_id`) NOT ENFORCED
                   ) WITH (
                     'connector' = 'upsert-kafka', 
-                    'topic' = 'flink.mtls.auth.sales.records', 
+                    'topic' = 'flink.oauth2.auth.sales.records', 
                     'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9094', 
                     'properties.security.protocol' = 'SASL_SSL',
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
