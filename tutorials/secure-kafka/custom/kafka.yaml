@@ -27,7 +27,6 @@ spec:
             ssl.client.auth: required
             ssl.truststore.location: /mnt/my-user-custom-cert/ca.crt
             ssl.truststore.type: PEM
-#            ssl.principal.mapping.rules: RULE:^CN=(.*?),(.*)$/$1@my-cluster.com/
     # You can remove spec.kafka.authorization
     # to grant all users unlimited access rights
     authorization:
