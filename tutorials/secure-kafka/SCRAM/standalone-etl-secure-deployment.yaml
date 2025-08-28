@@ -48,7 +48,11 @@ spec:
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
                     'properties.ssl.truststore.type' = 'PEM',
                     'properties.sasl.mechanism' = 'SCRAM-SHA-512',
-                    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule required username="my-user" password="$(USER_PASSWORD)"\;',
+                    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule
+                      required
+                        username="my-user"
+                        password="$(USER_PASSWORD)"
+                      \;',
                     'properties.group.id' = 'sales-record-group',
                     'value.format' = 'avro-confluent',
                     'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6',
@@ -69,7 +73,11 @@ spec:
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
                     'properties.ssl.truststore.type' = 'PEM',
                     'properties.sasl.mechanism' = 'SCRAM-SHA-512',
-                    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule required username="my-user" password="$(USER_PASSWORD)"\;',
+                    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule
+                      required
+                        username="my-user"
+                        password="$(USER_PASSWORD)"
+                      \;',
                     'properties.client.id' = 'sql-secure-client', 
                     'properties.transaction.timeout.ms' = '800000', 
                     'key.format' = 'csv', 
