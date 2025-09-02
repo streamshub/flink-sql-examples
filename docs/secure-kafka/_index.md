@@ -381,7 +381,7 @@ CREATE TABLE SalesRecordTable (
 +   'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
 
 +     -- Provide `user.password` from the generated `my-user` secret.
-+   'properties.ssl.keystore.password' = 'xxxxxxx',
++   'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
 
     'properties.group.id' = 'sales-record-group',
     'value.format' = 'avro-confluent',
@@ -472,7 +472,7 @@ CREATE TABLE SalesRecordTable (
 +   'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule
 +       required
 +           username="my-user"
-+           password="xxxxxxx"
++           password="{{secret:flink/my-user/password}}"
 +       ;',
 
     'properties.group.id' = 'sales-record-group',
@@ -595,7 +595,7 @@ CREATE TABLE SalesRecordTable (
 +           oauth.ssl.truststore.location="/opt/keycloak-ca-cert/ca.crt"
 +           oauth.ssl.truststore.type="PEM"
 +           oauth.client.id="kafka"
-+           oauth.client.secret="kafka-secret"
++           oauth.client.secret="{{secret:flink/keycloak-kafka-client-secret/secret}}"
 +           oauth.token.endpoint.uri="https://keycloak.flink.svc:8443/realms/kafka-authz/protocol/openid-connect/token"
 +       ;',
 
@@ -694,7 +694,7 @@ CREATE TABLE SalesRecordTable (
 +   'properties.ssl.keystore.location' = '/opt/my-user-custom-cert/keystore.p12',
 
 +     -- Provide 'password' from 'my-user-custom-cert-password' secret
-+   'properties.ssl.keystore.password' = 'xxxxxxx',
++   'properties.ssl.keystore.password' = '{{secret:flink/my-user-custom-cert-password/password}}',
 
     'properties.group.id' = 'sales-record-group',
     'value.format' = 'avro-confluent',
