@@ -104,9 +104,11 @@ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
 ## Secure
 
 > Note:
-> - A TLS listener is always included to allow the `recommendation-app` to send example data.
 > - Each example code block is `diff`ed against the PLAINTEXT example above.
 >   - The mTLS example below provides a `KafkaUser`. Each `KafkaUser` after that is `diff`ed against it.
+> - A TLS listener is always included to allow the `recommendation-app` to send example data.
+>   - A `recommendation-app-kafka-user` `KafkaUser` is also created and is always added to the `superUsers`
+>   list in the Kafka cluster, if authorization is enabled.
 
 ### Testing (preamble)
 
