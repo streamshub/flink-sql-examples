@@ -25,6 +25,7 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 >   - `quay.io/streamshub/flink-sql-runner`
 >     - Includes [Strimzi's OAuth 2.0 callback handler](https://github.com/strimzi/strimzi-kafka-oauth).
 >     - Shades Flink Kafka dependencies.
+>       - This is done to prevent dependency conflicts.
 > - Only relevant lines are included in the code blocks.
 >   - The `tutorials/secure-kafka` directory contains the complete files.
 > - For greater detail on what is covered in this tutorial, you can read the following:
@@ -549,7 +550,7 @@ CREATE TABLE SalesRecordTable (
 +     -- Connect using OAUTHBEARER mechanism (OAuth 2.0 with Bearer token)
 +   'properties.sasl.mechanism' = 'OAUTHBEARER',
 
-+     -- Connect using Kafka's OAuthBearerLoginModule
++     -- Connect using Kafka's OAuthBearerLoginModule (shaded in our Flink distribution to prevent dependency conflicts)
 +     -- Provide path to mounted secret containing Keycloak's self-signed TLS certificate
 +     -- Provide OAuth 2.0 client and endpoint details for/from Keycloak realm
 +   'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule
