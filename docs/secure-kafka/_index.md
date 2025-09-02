@@ -547,7 +547,7 @@ CREATE TABLE SalesRecordTable (
 +   'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
 +   'properties.ssl.truststore.type' = 'PEM',
 
-+     -- Connect using OAUTHBEARER mechanism (OAuth 2.0 with Bearer token)
++     -- Connect using OAUTHBEARER mechanism (OAuth 2.0 with Bearer/access token)
 +   'properties.sasl.mechanism' = 'OAUTHBEARER',
 
 +     -- Connect using Kafka's OAuthBearerLoginModule (shaded in our Flink distribution to prevent dependency conflicts)
