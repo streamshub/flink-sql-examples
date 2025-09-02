@@ -39,6 +39,8 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 - No encryption.
 - No authentication.
 
+Set up the demo application:
+
 ```shell
 # Note: PLAINTEXT is the default option if you don't pass SECURE_KAFKA.
 # Note: This sets up Kafka, Flink, recommendation-app (generates example data), etc.
@@ -133,6 +135,8 @@ You can verify the different authentication methods below work by doing the foll
 - Encrypted using TLS (e.g. `TLSv1.3` and `TLS_AES_256_GCM_SHA384`).
 - Server is authenticated by client.
 
+Set up the demo application:
+
 ```shell
 SECURE_KAFKA=OAuth2 ./scripts/data-gen-setup.sh
 
@@ -199,6 +203,8 @@ CREATE TABLE SalesRecordTable (
 
 - Encrypted using TLS (e.g. `TLSv1.3` and `TLS_AES_256_GCM_SHA384`).
 - Both server and client are authenticated.
+
+Set up the demo application:
 
 ```shell
 SECURE_KAFKA=mTLS ./scripts/data-gen-setup.sh
@@ -278,6 +284,8 @@ CREATE TABLE SalesRecordTable (
 ```
 
 ### SCRAM-SHA-512
+
+Set up the demo application:
 
 ```shell
 SECURE_KAFKA=SCRAM ./scripts/data-gen-setup.sh
@@ -367,6 +375,8 @@ CREATE TABLE SalesRecordTable (
 > [`strimzi-kafka-operator` Keycloak example](https://github.com/strimzi/strimzi-kafka-operator/blob/main/examples/security/keycloak-authorization/kafka-authz-realm.json).
 >   - Username: `admin`
 >   - Password: `admin`
+
+Set up the demo application:
 
 ```shell
 # Note: For OAuth 2.0, Keycloak and a self-signed
@@ -471,6 +481,8 @@ CREATE TABLE SalesRecordTable (
 > Note: Custom authentication allows wide flexibility in how authentication is carried out.
 > 
 > For the sake of simplicity, this example shows how to use a custom TLS client authentication truststore. 
+
+Set up the demo application:
 
 ```shell
 # Note: For custom authentication, a self-signed TLS truststore
