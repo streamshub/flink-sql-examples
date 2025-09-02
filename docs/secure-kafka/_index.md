@@ -23,7 +23,7 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 > - All the commands below are meant to be run from the `tutorials` directory.
 > - The Flink SQL commands assume the query is being run on our Flink distribution.
 >   - `quay.io/streamshub/flink-sql-runner`
->     - Includes Strimzi's OAuth 2.0 callback handler.
+>     - Includes [Strimzi's OAuth 2.0 callback handler](https://github.com/strimzi/strimzi-kafka-oauth).
 >     - Shades Flink Kafka dependencies.
 > - Only relevant lines are included in the code blocks.
 >   - The `tutorials/secure-kafka` directory contains the complete files.
@@ -446,17 +446,27 @@ CREATE TABLE SalesRecordTable (
 
 ### OAuth 2.0
 
+OAuth 2.0 is a standardized protocol for _authorization_, but is commonly used
+[inside of authentication protocols](https://oauth.net/articles/authentication/).
+
+In this example, the `data-gen-setup.sh` script creates a secure [Keycloak](https://www.keycloak.org/) deployment as our
+OAuth 2.0 provider. It is an open-source piece of Identity and Access Management software that is
+[built on top of the OAuth 2.0 specification](https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_overview).
+The script automatically creates a self-signed TLS certificate for Keycloak's HTTPS endpoints.
+
+Since our `data-gen-setup.sh` script sets up a Kafka cluster using Strimzi, this
+example uses the Keycloak config and realm from the [`strimzi-kafka-operator` Keycloak example](https://github.com/strimzi/strimzi-kafka-operator/blob/main/examples/security/keycloak-authorization/kafka-authz-realm.json).
+
 > Note:
-> - This example uses the Keycloak config and realm from the
-> [`strimzi-kafka-operator` Keycloak example](https://github.com/strimzi/strimzi-kafka-operator/blob/main/examples/security/keycloak-authorization/kafka-authz-realm.json).
+> - Keycloak Web UI credentials:
 >   - Username: `admin`
 >   - Password: `admin`
 
 Set up the demo application:
 
 ```shell
-# Note: For OAuth 2.0, Keycloak and a self-signed
-# TLS certificate for Keycloak are automatically created.
+# Note: For OAuth 2.0, a secure Keycloak deployment with
+#       a self-signed HTTPS TLS certificate is generated
 SECURE_KAFKA=OAuth2 ./scripts/data-gen-setup.sh
 
 kubectl -n flink apply -f secure-kafka/OAuth2/standalone-etl-secure-deployment.yaml
@@ -508,6 +518,12 @@ spec:
 - authentication:               # Remove authentication
 -   type: tls
 ```
+
+The end of a typical OAuth 2.0 flow involves granting the user an [access token](https://www.oauth.com/oauth2-servers/access-tokens/)
+after successful authorization and redirecting them to a [callback URL](https://www.oauth.com/oauth2-servers/redirect-uris/).
+Since we're using Strimzi, we need to instruct Flink to use [Strimzi's OAuth 2.0 callback handler](https://github.com/strimzi/strimzi-kafka-oauth) to handle this.
+
+> Note: As mentioned at the top of this tutorial, our Flink distribution comes with Strimzi's OAuth 2.0 callback handler included.
 
 We can connect to the listener using the query below:
 
