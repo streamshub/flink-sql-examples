@@ -578,9 +578,8 @@ CREATE TABLE SalesRecordTable (
 
 ### Custom
 
-> Note: Custom authentication allows wide flexibility in how authentication is carried out.
-> 
-> For the sake of simplicity, this example shows how to use a custom TLS client authentication truststore. 
+Custom authentication allows wide flexibility in how authentication is carried out.
+For the sake of simplicity, this example shows how to use a custom TLS client authentication truststore. 
 
 Set up the demo application:
 
