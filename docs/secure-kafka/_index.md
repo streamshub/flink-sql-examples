@@ -11,11 +11,11 @@ title = 'Connecting to Kafka securely using Flink SQL'
 It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface.
 In this tutorial, we go over ways to securely connect to Kafka from Flink SQL.
 
-The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the [`tutorials/secure-kafka`](https://github.com/streamshub/flink-sql-examples/tree/main/tutorials/anomaly-detection) directory.
+The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the [`tutorials/secure-kafka`](https://github.com/streamshub/flink-sql-examples/tree/main/tutorials/secure-kafka) directory.
 
 > Note:
 > - This tutorial only covers authentication, not authorization. 
-> - All the commands below are meant to be ran from the `tutorials` directory.
+> - All the commands below are meant to be run from the `tutorials` directory.
 > - The Flink SQL commands assume the query is being run on our Flink distribution.
 >   - `quay.io/streamshub/flink-sql-runner`
 >     - Includes Strimzi's OAuth 2.0 callback handler.
@@ -393,19 +393,19 @@ spec:
 +       authentication:
 +         type: oauth       # Specify OAuth 2.0 authentication
 
-+           # Specify OAuth 2.0 JWKS/JWT details
++         # Specify OAuth 2.0 JWKS/JWT details
 +         validIssuerUri: https://keycloak.flink.svc:8443/realms/kafka-authz
 +         jwksEndpointUri: https://keycloak.flink.svc:8443/realms/kafka-authz/protocol/openid-connect/certs
 +         userNameClaim: preferred_username
 
-+           # Trust self-signed TLS certificate used by Keycloak HTTPS endpoint
++         # Trust self-signed TLS certificate used by Keycloak HTTPS endpoint
 +         tlsTrustedCertificates:
 +           - secretName: keycloak-cert
 +             certificate: tls.crt
 ```
 
 ```diff
-# This KafkaUser is only needed if using simple authorization
+# This KafkaUser is only needed if the Kafka listener is using simple authorization
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
 metadata:
@@ -463,9 +463,9 @@ CREATE TABLE SalesRecordTable (
 
 ### Custom
 
-> Note: Custom authentication provides extensive control.
+> Note: Custom authentication allows wide flexibility in how authentication is carried out.
 > 
-> For the sake of simplicity, this example just shows how to use a custom TLS client authentication truststore. 
+> For the sake of simplicity, this example shows how to use a custom TLS client authentication truststore. 
 
 ```shell
 # Note: For custom authentication, a self-signed TLS truststore
