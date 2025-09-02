@@ -66,6 +66,8 @@ spec:
         tls: false      # Plain listener with no encryption
 ```
 
+We can connect to the plain listener, like in the other Flink SQL tutorials, using the query below:
+
 ```sql
 CREATE TABLE SalesRecordTable ( 
     invoice_id STRING, 
@@ -164,7 +166,10 @@ spec:
 +       tls: true       # Enable TLS encryption on listener
 ```
 
+We can connect to the listener using the query below:
+
 ```diff
+-- NOTE: This line is included in standalone-etl-secure-deployment.yaml
 CREATE TABLE SalesRecordTable ( 
     invoice_id STRING, 
     user_id STRING, 
@@ -250,7 +255,10 @@ spec:
     type: tls       # This will generate a 'my-user' Secret containing credentials
 ```
 
+We can connect to the listener using the query below:
+
 ```diff
+-- NOTE: This line is included in standalone-etl-secure-deployment.yaml
 CREATE TABLE SalesRecordTable ( 
     invoice_id STRING, 
     user_id STRING, 
@@ -330,7 +338,10 @@ spec:
 +   type: scram-sha-512     # Specify SCRAM authentication
 ```
 
+We can connect to the listener using the query below:
+
 ```diff
+-- NOTE: This line is included in standalone-etl-secure-deployment.yaml
 CREATE TABLE SalesRecordTable ( 
     invoice_id STRING, 
     user_id STRING, 
@@ -433,7 +444,10 @@ spec:
 -   type: tls
 ```
 
+We can connect to the listener using the query below:
+
 ```diff
+-- NOTE: This line is included in standalone-etl-secure-deployment.yaml
 CREATE TABLE SalesRecordTable (
     invoice_id STRING,
     user_id STRING,
@@ -537,7 +551,10 @@ spec:
 +                       # (we use our own self-signed certificate)
 ```
 
+We can connect to the listener using the query below:
+
 ```diff
+-- NOTE: This line is included in standalone-etl-secure-deployment.yaml
 CREATE TABLE SalesRecordTable (
     invoice_id STRING,
     user_id STRING,
