@@ -21,6 +21,8 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 > Note:
 > - This tutorial only covers authentication, not authorization. 
 > - All the commands below are meant to be run from the `tutorials` directory.
+> - Re-running the `data-gen-setup.sh` script with different `SECURE_KAFKA` values on the same cluster
+> may lead to a variety of errors.
 > - The Flink SQL commands assume the query is being run on our Flink distribution.
 >   - `quay.io/streamshub/flink-sql-runner`
 >     - Includes [Strimzi's OAuth 2.0 callback handler](https://github.com/strimzi/strimzi-kafka-oauth).
@@ -132,7 +134,7 @@ You can verify the different authentication methods below work by doing the foll
 the JSON response with [`jq`](https://jqlang.org/) like so:
 
     ```shell
-    # Note: There should only be one job running
+    # Note: There should only be one infinitely running job
     RUNNING_JOB_ID=$(curl -s localhost:8081/jobs/ | \
       jq -r '.jobs[] | select(.status == "RUNNING") | .id')
     
@@ -147,12 +149,14 @@ the JSON response with [`jq`](https://jqlang.org/) like so:
   
     This should output the following result:
 
-    ```json
+    ```jsonc
     {
       "write-records": 10,
       "write-records-complete": true
     }
     ```
+
+    > Note: If the result is different, you might've made the API request too quickly. Try again in a few seconds.
 
 #### Using Web UI
 
