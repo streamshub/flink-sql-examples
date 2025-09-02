@@ -359,6 +359,10 @@ CREATE TABLE SalesRecordTable (
 
 ### SCRAM-SHA-512
 
+A TLS connection will lose its security if the Certificate Authority that issued the TLS certificate is compromised.
+[SCRAM](https://datatracker.ietf.org/doc/html/rfc7804) is a family of authentication mechanisms that aim to prevent this
+using a combination of challenge-response, salting, hashing, channel binding, etc.
+
 Set up the demo application:
 
 ```shell
