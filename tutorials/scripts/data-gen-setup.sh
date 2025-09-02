@@ -127,6 +127,9 @@ case $SECURE_KAFKA in
     printf "\n\e[32mCreating Keycloak realm \"kafka-authz-realm\" ConfigMap (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/keycloak/kafka-authz-realm.yaml -n "${NAMESPACE}"
 
+    printf "\n\e[32mCreating Keycloak \"kafka\" client Secret (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak-kafka-client-secret.yaml -n "${NAMESPACE}"
+
     printf "\n\e[32mCreating Keycloak deployment (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak.yaml -n "${NAMESPACE}"
 
@@ -138,9 +141,6 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka-user.yaml -n "${NAMESPACE}"
-
-    printf "\n\e[32mWaiting for kafka user Secret to be generated (OAuth2)...\e[0m\n"
-    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret service-account-kafka
     ;;
 
   "custom")
@@ -158,9 +158,6 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mCreating Kafka user (custom)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/custom/kafka-user.yaml -n "${NAMESPACE}"
-
-    printf "\n\e[32mWaiting for kafka user Secret to be generated (custom)...\e[0m\n"
-    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret my-user
     ;;
 
   *)
@@ -193,6 +190,12 @@ case $SECURE_KAFKA in
 
     printf "\n\e[32mDeploying secure data generation application...\e[0m\n"
     ${KUBE_CMD} -n "${NAMESPACE}" apply -f secure-kafka/data-generator/data-generator.yaml
+
+    printf "\n\e[32mCreating Role that allows Secret reading (if it doesn't exist)...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" create role secret-getter --dry-run=client -o yaml --verb=get --verb=list --verb=watch --resource=secrets | ${KUBE_CMD} -n "${NAMESPACE}" apply -f -
+
+    printf "\n\e[32mCreating RoleBinding to allow flink service account to read Secrets (if it doesn't exist)...\e[0m\n"
+    ${KUBE_CMD} -n "${NAMESPACE}" create rolebinding allow-flink-secret-getting --dry-run=client -o yaml --role=secret-getter --serviceaccount=flink:flink | ${KUBE_CMD} -n "${NAMESPACE}" apply -f -
     ;;
 
   *)

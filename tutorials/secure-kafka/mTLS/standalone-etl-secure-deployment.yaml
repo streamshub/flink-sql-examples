@@ -34,11 +34,6 @@ spec:
               mountPath: "/opt/my-user"
               readOnly: true
           env:
-            - name: KEYSTORE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                    name: my-user
-                    key: user.password
             - name: SQL_STATEMENTS
               value: |
                   CREATE TABLE SalesRecordTable (
@@ -57,7 +52,7 @@ spec:
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
                     'properties.ssl.truststore.type' = 'PEM',
                     'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
-                    'properties.ssl.keystore.password' = '$(KEYSTORE_PASSWORD)',
+                    'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
                     'properties.group.id' = 'sales-record-group',
                     'value.format' = 'avro-confluent',
                     'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6',
@@ -78,7 +73,7 @@ spec:
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
                     'properties.ssl.truststore.type' = 'PEM',
                     'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
-                    'properties.ssl.keystore.password' = '$(KEYSTORE_PASSWORD)',
+                    'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
                     'properties.client.id' = 'sql-secure-client', 
                     'properties.transaction.timeout.ms' = '800000', 
                     'key.format' = 'csv', 

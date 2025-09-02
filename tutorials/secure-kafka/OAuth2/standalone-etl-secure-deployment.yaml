@@ -57,7 +57,7 @@ spec:
                         oauth.ssl.truststore.location="/opt/keycloak-ca-cert/ca.crt"
                         oauth.ssl.truststore.type="PEM"
                         oauth.client.id="kafka"
-                        oauth.client.secret="kafka-secret"
+                        oauth.client.secret="{{secret:flink/keycloak-kafka-client-secret/secret}}"
                         oauth.token.endpoint.uri="https://keycloak.flink.svc:8443/realms/kafka-authz/protocol/openid-connect/token"
                       \;',
                     'properties.sasl.login.callback.handler.class' = 'io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler',
@@ -86,7 +86,7 @@ spec:
                         oauth.ssl.truststore.location="/opt/keycloak-ca-cert/ca.crt"
                         oauth.ssl.truststore.type="PEM"
                         oauth.client.id="kafka"
-                        oauth.client.secret="kafka-secret"
+                        oauth.client.secret="{{secret:flink/keycloak-kafka-client-secret/secret}}"
                         oauth.token.endpoint.uri="https://keycloak.flink.svc:8443/realms/kafka-authz/protocol/openid-connect/token"
                       \;',
                     'properties.sasl.login.callback.handler.class' = 'io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler',

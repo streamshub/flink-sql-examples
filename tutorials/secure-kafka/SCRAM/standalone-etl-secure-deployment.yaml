@@ -25,11 +25,6 @@ spec:
               mountPath: "/opt/my-cluster-cluster-ca-cert"
               readOnly: true
           env:
-            - name: USER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: my-user
-                  key: password
             - name: SQL_STATEMENTS
               value: |
                   CREATE TABLE SalesRecordTable (
@@ -51,7 +46,7 @@ spec:
                     'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule
                       required
                         username="my-user"
-                        password="$(USER_PASSWORD)"
+                        password="{{secret:flink/my-user/password}}"
                       \;',
                     'properties.group.id' = 'sales-record-group',
                     'value.format' = 'avro-confluent',
@@ -76,7 +71,7 @@ spec:
                     'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.scram.ScramLoginModule
                       required
                         username="my-user"
-                        password="$(USER_PASSWORD)"
+                        password="{{secret:flink/my-user/password}}"
                       \;',
                     'properties.client.id' = 'sql-secure-client', 
                     'properties.transaction.timeout.ms' = '800000', 
