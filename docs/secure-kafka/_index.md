@@ -115,9 +115,9 @@ kubectl exec -it my-cluster-dual-role-0 -n flink -- /bin/bash \
 
 You can verify the different authentication methods below work by doing the following:
 
-1. Run the commands in the example, as instructed.
+- Run the commands in the example, as instructed.
 
-2. Port forward the Flink Job Manager pod so we can access it:
+- Port forward the Flink Job Manager pod so we can access it:
 
     ```shell
     kubectl -n flink port-forward <job-manager-pod> 8081:8081
@@ -126,14 +126,43 @@ You can verify the different authentication methods below work by doing the foll
     The job manager pod will have the name format `standalone-etl-secure-<alphanumeric>`, your `kubectl` should tab-complete the name.
     If it doesn't then you can find the job manager name by running `kubectl -n flink get pods`.
 
-3. Navigate to `http://localhost:8081` to view the Flink dashboard:
+#### Using REST API
+
+- Make an API request to the [JobManager REST API](https://nightlies.apache.org/flink/flink-docs-release-2.1/docs/ops/rest_api/) and parse
+the JSON response with [`jq`](https://jqlang.org/) like so:
+
+    ```shell
+    # Note: There should only be one job running
+    RUNNING_JOB_ID=$(curl -s localhost:8081/jobs/ | \
+      jq -r '.jobs[] | select(.status == "RUNNING") | .id')
+    
+    # Get number of records written to the output table/topic
+    curl -s localhost:8081/jobs/$RUNNING_JOB_ID | \
+      jq '.vertices[] | select(.name | contains("Writer")) |
+          {
+            "write-records": .metrics."write-records",
+            "write-records-complete": .metrics."write-records-complete"
+          }'
+    ```
+  
+    This should output the following result:
+
+    ```json
+    {
+      "write-records": 10,
+      "write-records-complete": true
+    }
+    ```
+
+#### Using Web UI
+
+- Navigate to `http://localhost:8081` to view the Flink dashboard:
 
     ![jobs](./assets/jobs.png)
 
-4. Click on the `standalone-etl-secure` job and verify it has sent `10` records to a topic.
+- Click on the `standalone-etl-secure` job and verify it has sent `10` records to a topic.
 
     ![job](./assets/job.png)
-
 
 ### TLS
 
