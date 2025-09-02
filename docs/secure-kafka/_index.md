@@ -3,11 +3,11 @@ title = 'Connecting to Kafka securely using Flink SQL'
 +++
 
 > Note: This tutorial is mainly focused on securing connections between Flink SQL and Kafka.
-> For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/learn-flink/etl/)
+> For detailed information on working with [Flink ETL Jobs](https://nightlies.apache.org/flink/flink-docs-release-2.1/docs/learn-flink/etl/)
 > and [Session Clusters](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/custom-resource/overview/#session-cluster-deployments),
 > look at the [Interactive ETL example](../interactive-etl/_index.md).
 
-[Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/dev/table/overview/) is a powerful tool for data exploration, manipulation and inter-connection.
+[Flink SQL](https://nightlies.apache.org/flink/flink-docs-release-2.1/docs/dev/table/overview/) is a powerful tool for data exploration, manipulation and inter-connection.
 It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface.
 In this tutorial, we go over ways to securely connect to Kafka from Flink SQL.
 
