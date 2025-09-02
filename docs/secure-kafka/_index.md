@@ -11,6 +11,11 @@ title = 'Connecting to Kafka securely using Flink SQL'
 It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface.
 In this tutorial, we go over ways to securely connect to Kafka from Flink SQL.
 
+In the sections below, we cover all the supported secure connection options for Kafka.
+In each case, we go over how to configure the data generator script
+so that it sets up an example Kafka cluster with the appropriate secure listener,
+and then we show the configuration needed to connect to that secure listener in Flink SQL.
+
 The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the [`tutorials/secure-kafka`](https://github.com/streamshub/flink-sql-examples/tree/main/tutorials/secure-kafka) directory.
 
 > Note:
