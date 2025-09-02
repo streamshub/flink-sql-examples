@@ -61,7 +61,7 @@ else
     ${KUBE_CMD} create -f 'https://strimzi.io/install/latest?namespace=flink' -n "${NAMESPACE}"
 fi
 
-printf "\n\e[32mChecking current script is being ran from the tutorial directory\e[0m\n"
+printf "\n\e[32mChecking that this script is being run from within the tutorial directory\e[0m\n"
 if [ -f "scripts/data-gen-setup.sh" ]; then
     printf "\e[32mFound scripts/data-gen-setup.sh\e[0m\n"
 else
