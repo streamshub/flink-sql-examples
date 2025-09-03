@@ -23,8 +23,7 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 > - The Flink SQL commands assume the query is being run on our Flink distribution.
 >   - `quay.io/streamshub/flink-sql-runner`
 >     - Includes [Strimzi's OAuth 2.0 callback handler](https://github.com/strimzi/strimzi-kafka-oauth).
->     - Shades Flink Kafka dependencies.
->       - This is done to prevent dependency conflicts.
+>     - Shades Flink Kafka dependencies (this is done to prevent dependency conflicts).
 > - Only relevant lines are included in the code blocks.
 >   - The `tutorials/secure-kafka` directory contains the complete deployment files.
 > - For greater detail on what is covered in this tutorial, you can read the following:
