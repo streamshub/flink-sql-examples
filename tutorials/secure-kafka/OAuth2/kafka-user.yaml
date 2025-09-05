@@ -24,3 +24,8 @@ spec:
           - Create
           - Write
           - Read
+      - resource:
+          type: group
+          name: sales-record-group
+        operations:
+          - Read
