@@ -80,7 +80,7 @@ CREATE TABLE SalesRecordTable (
     'connector' = 'kafka',
     'topic' = 'flink.sales.records',
     
-    -- The line below is the default
+    -- Connect over PLAINTEXT (commented out because it is the default)
     -- 'properties.security.protocol' = 'PLAINTEXT',
     
     -- Point to our plain listener
