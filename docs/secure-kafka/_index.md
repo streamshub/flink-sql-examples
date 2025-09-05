@@ -1,5 +1,5 @@
 +++
-title = 'Connecting to Kafka securely using Flink SQL'
+title = 'Connecting to Apache Kafka securely using Flink SQL'
 +++
 
 > Note: This tutorial is mainly focused on securing connections between Flink SQL and Kafka.
@@ -11,7 +11,7 @@ title = 'Connecting to Kafka securely using Flink SQL'
 It allows you to access the power of Flink's distributed stream processing abilities with a familiar interface.
 In this tutorial, we go over ways to securely connect to Kafka from Flink SQL.
 
-In the sections below, we cover all the supported secure connection options when running Kafka with the Strimzi Kubernetes operator.
+In the sections below, we cover all the supported secure connection options when running Kafka with the [Strimzi](strimzi.io) Kubernetes operator.
 In each case, we go over how to configure the data generator script so that it sets up an example Kafka cluster with the appropriate secure listener, and then we show the configuration needed to connect to that secure listener in Flink SQL.
 
 The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/streamshub/flink-sql-examples) repository and the code can be found under the [`tutorials/secure-kafka`](https://github.com/streamshub/flink-sql-examples/tree/main/tutorials/secure-kafka) directory.
@@ -302,7 +302,7 @@ spec:
 ```
 
 ```yaml
-# KafkaUser added for client authnetication examples,
+# KafkaUser added for client authentication examples,
 # not necessary for Kafka listeners without
 # 'authentication' property.
 apiVersion: kafka.strimzi.io/v1beta1
