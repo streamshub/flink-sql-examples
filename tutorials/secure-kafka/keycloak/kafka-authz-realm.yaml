@@ -1,9 +1,11 @@
-apiVersion: v1
-kind: ConfigMap
+# Realm copied from https://github.com/strimzi/strimzi-kafka-operator/blob/main/examples/security/keycloak-authorization/kafka-authz-realm.json
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
 metadata:
   name: kafka-authz-realm
-data:
-  kafka-authz-realm.json: |
+spec:
+  keycloakCRName: keycloak
+  realm:
     {
       "realm": "kafka-authz",
       "accessTokenLifespan": 3600,

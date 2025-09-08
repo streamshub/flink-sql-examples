@@ -8,6 +8,7 @@ KUBE_CMD=${KUBE_CMD:-kubectl}
 TIMEOUT=${TIMEOUT:-180}
 FLINK_OPERATOR_VERSION="1.12.1"
 CERT_MANAGER_VERSION="1.18.2"
+KEYCLOAK_OPERATOR_VERSION="26.3.3"
 SECURE_KAFKA=${SECURE_KAFKA:-"PLAINTEXT"}
 
 printf "\n\n\e[32mInstalling example components into namespace: %s\e[0m\n\n" "${NAMESPACE}"
@@ -115,6 +116,13 @@ case $SECURE_KAFKA in
     printf "\n\e[32mCreating Kafka pool (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/kafka-pool.yaml -n "${NAMESPACE}"
 
+    printf "\n\e[32mInstalling Keycloak Operator CRDs (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f "https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${KEYCLOAK_OPERATOR_VERSION}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml" -n "${NAMESPACE}"
+    ${KUBE_CMD} apply -f "https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${KEYCLOAK_OPERATOR_VERSION}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml" -n "${NAMESPACE}"
+
+    printf "\n\e[32mInstalling Keycloak Operator deployment (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f "https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${KEYCLOAK_OPERATOR_VERSION}/kubernetes/kubernetes.yml" -n "${NAMESPACE}"
+
     printf "\n\e[32mCreating self-signed CA issuer using cert-manager (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/selfsigned-ca.yaml -n "${NAMESPACE}"
 
@@ -122,19 +130,25 @@ case $SECURE_KAFKA in
     ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak-cert.yaml -n "${NAMESPACE}"
 
     printf "\n\e[32mWaiting for self-signed Keycloak TLS certificate Secret to be generated (OAuth2)\e[0m\n"
-    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=create --timeout="${TIMEOUT}"s secret keycloak-cert
-
-    printf "\n\e[32mCreating Keycloak realm \"kafka-authz-realm\" ConfigMap (OAuth2)\e[0m\n"
-    ${KUBE_CMD} apply -f secure-kafka/keycloak/kafka-authz-realm.yaml -n "${NAMESPACE}"
+    ${KUBE_CMD} wait --for=create --timeout="${TIMEOUT}"s secret keycloak-cert -n "${NAMESPACE}"
 
     printf "\n\e[32mCreating Keycloak \"kafka\" client Secret (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak-kafka-client-secret.yaml -n "${NAMESPACE}"
 
-    printf "\n\e[32mCreating Keycloak deployment (OAuth2)\e[0m\n"
+    printf "\n\e[32mCreating Keycloak instance (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/keycloak/keycloak.yaml -n "${NAMESPACE}"
 
-    printf "\n\e[32mWaiting for Keycloak pod to be ready (OAuth2)\e[0m\n"
-    ${KUBE_CMD} -n "${NAMESPACE}" wait --for=condition=Ready --timeout="${TIMEOUT}"s pod keycloak-0
+    printf "\n\e[32mImporting Keycloak realm \"kafka-authz-realm\" (OAuth2)\e[0m\n"
+    ${KUBE_CMD} apply -f secure-kafka/keycloak/kafka-authz-realm.yaml -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for Keycloak realm \"kafka-authz-realm\" to be done importing (OAuth2)\e[0m\n"
+    ${KUBE_CMD} wait --for=condition=Done --timeout="${TIMEOUT}"s keycloakrealmimports kafka-authz-realm -n "${NAMESPACE}"
+
+    printf "\n\e[32mCleaning up done \"kafka-authz-realm\" import resources (OAuth2)\e[0m\n"
+    ${KUBE_CMD} delete keycloakrealmimports kafka-authz-realm -n "${NAMESPACE}"
+
+    printf "\n\e[32mWaiting for Keycloak instance to be ready (OAuth2)\e[0m\n"
+    ${KUBE_CMD} wait --for=condition=Ready --timeout="${TIMEOUT}"s keycloak keycloak -n "${NAMESPACE}"
 
     printf "\n\e[32mCreating Kafka cluster (OAuth2)\e[0m\n"
     ${KUBE_CMD} apply -f secure-kafka/OAuth2/kafka.yaml -n "${NAMESPACE}"
