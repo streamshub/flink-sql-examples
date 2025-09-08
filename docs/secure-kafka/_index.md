@@ -170,7 +170,7 @@ You can verify that the different authentication methods, shown below, are worki
 Set up the demo application:
 
 ```shell
-SECURE_KAFKA=OAuth2 ./scripts/data-gen-setup.sh
+SECURE_KAFKA=TLS ./scripts/data-gen-setup.sh
 
 # Note: This creates a standalone Flink job that connects to the Kafka listener
 #       below and copies 10 records from an existing topic to a newly created one
