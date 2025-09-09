@@ -1,0 +1,123 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: standalone-etl-secure
+spec:
+  image: quay.io/streamshub/flink-sql-runner:main
+  flinkVersion: v2_0
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+    # Internal mTLS
+    security.ssl.internal.enabled: 'true'
+    security.ssl.internal.keystore: /opt/flink/flink-internal-cert/keystore.p12
+    security.ssl.internal.keystore-password: ${INTERNAL_PASSWORD}
+    security.ssl.internal.keystore-type: PKCS12
+    security.ssl.internal.key-password: ${INTERNAL_PASSWORD}
+    security.ssl.internal.truststore: /opt/flink/flink-internal-cert/truststore.p12
+    security.ssl.internal.truststore-password: ${INTERNAL_PASSWORD}
+    security.ssl.internal.truststore-type: PKCS12
+    # REST API TLS (non-mutual auth)
+    security.ssl.rest.enabled: 'true'
+    security.ssl.rest.keystore: /opt/flink/flink-internal-cert/keystore.p12
+    security.ssl.rest.keystore-password: ${INTERNAL_PASSWORD}
+    security.ssl.rest.keystore-type: PKCS12
+    security.ssl.rest.key-password: ${INTERNAL_PASSWORD}
+    security.ssl.rest.truststore: /opt/flink/flink-internal-cert/truststore.p12
+    security.ssl.rest.truststore-password: ${INTERNAL_PASSWORD}
+    security.ssl.rest.truststore-type: PKCS12
+    # Secrets
+    kubernetes.secrets: 'flink-internal-cert:/opt/flink/flink-internal-cert'
+  serviceAccount: flink
+  podTemplate:
+    kind: Pod
+    spec:
+      volumes:
+        - name: my-cluster-cluster-ca-cert
+          secret:
+            secretName: my-cluster-cluster-ca-cert
+            items:
+              - key: ca.crt
+                path: ca.crt
+        - name: my-user
+          secret:
+            secretName: my-user
+            items:
+              - key: user.p12
+                path: user.p12
+      containers:
+        - name: flink-main-container
+          volumeMounts:
+            - name: my-cluster-cluster-ca-cert
+              mountPath: "/opt/my-cluster-cluster-ca-cert"
+              readOnly: true
+            - name: my-user
+              mountPath: "/opt/my-user"
+              readOnly: true
+          env:
+            - name: SQL_STATEMENTS
+              value: |
+                CREATE TABLE SalesRecordTable (
+                  invoice_id STRING,
+                  user_id STRING,
+                  product_id STRING,
+                  quantity STRING,
+                  unit_cost STRING,
+                  `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp',
+                  WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND
+                ) WITH (
+                  'connector' = 'kafka',
+                  'topic' = 'flink.sales.records',
+                  'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9094',
+                  'properties.security.protocol' = 'SSL',
+                  'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
+                  'properties.ssl.truststore.type' = 'PEM',
+                  'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
+                  'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
+                  'properties.group.id' = 'sales-record-group',
+                  'value.format' = 'avro-confluent',
+                  'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6',
+                  'scan.startup.mode' = 'latest-offset'
+                );
+                
+                CREATE TABLE MTlsAuthSalesRecordTable (
+                  invoice_id STRING, 
+                  user_id STRING, 
+                  product_id STRING, 
+                  quantity STRING, 
+                  PRIMARY KEY (`user_id`) NOT ENFORCED
+                ) WITH (
+                  'connector' = 'upsert-kafka', 
+                  'topic' = 'flink.mtls.auth.sales.records', 
+                  'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9094', 
+                  'properties.security.protocol' = 'SSL',
+                  'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
+                  'properties.ssl.truststore.type' = 'PEM',
+                  'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
+                  'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
+                  'properties.client.id' = 'sql-secure-client', 
+                  'properties.transaction.timeout.ms' = '800000', 
+                  'key.format' = 'csv', 
+                  'value.format' = 'csv', 
+                  'value.fields-include' = 'ALL'
+                );
+                
+                INSERT INTO MTlsAuthSalesRecordTable 
+                  SELECT 
+                    invoice_id, 
+                    user_id, 
+                    product_id, 
+                    quantity
+                  FROM SalesRecordTable
+                  LIMIT 10;
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/streamshub/flink-sql-runner.jar
+    parallelism: 1
+    upgradeMode: stateless
