@@ -371,7 +371,14 @@ CREATE TABLE SalesRecordTable (
 +     -- for the 'my-user' KafkaUser
 +   'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
 
++     -- If you prefer using PEM files, you will need to combine
++     -- the user cert and key beforehand e.g. like this:
++     --     cat user.key user.crt > keystore.pem
++   -- 'properties.ssl.keystore.location' = '/opt/path-to-keystore/keystore.pem',
++   -- 'properties.ssl.keystore.type' = 'PEM',
+
 +     -- Provide `user.password` from the Strimzi generated `my-user` secret.
++     -- (If you're using a PEM keystore (like commented above), exclude this line)
 +   'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
 
     'properties.group.id' = 'sales-record-group',
