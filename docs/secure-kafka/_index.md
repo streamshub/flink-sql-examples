@@ -19,7 +19,7 @@ The tutorial is based on the StreamsHub [Flink SQL Examples](https://github.com/
 > Note:
 > - This tutorial only covers authentication, not authorization. For information on configuring authorization for the Kafka Users used in this tutorial see the [Strimzi documentation](https://strimzi.io/docs/operators/latest/deploying#assembly-securing-access-str).
 > - All the commands below are meant to be run from the `tutorials` directory.
-> - Re-running the `data-gen-setup.sh` script with different `SECURE_KAFKA` values on the same cluster may lead to a variety of errors.
+> - Re-running the `data-gen-setup.sh` script with different `SECURE_KAFKA` values on the same Kubernetes cluster may lead to a variety of errors.
 > - The Flink SQL commands assume the query is being run on our Flink distribution.
 >   - `quay.io/streamshub/flink-sql-runner`
 >     - Includes [Strimzi's OAuth 2.0 callback handler](https://github.com/strimzi/strimzi-kafka-oauth).
