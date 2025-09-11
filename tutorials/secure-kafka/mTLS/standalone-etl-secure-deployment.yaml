@@ -18,20 +18,11 @@ spec:
             items:
               - key: ca.crt
                 path: ca.crt
-        - name: my-user
-          secret:
-            secretName: my-user
-            items:
-              - key: user.p12
-                path: user.p12
       containers:
         - name: flink-main-container
           volumeMounts:
             - name: my-cluster-cluster-ca-cert
               mountPath: "/opt/my-cluster-cluster-ca-cert"
-              readOnly: true
-            - name: my-user
-              mountPath: "/opt/my-user"
               readOnly: true
           env:
             - name: SQL_STATEMENTS
@@ -51,8 +42,9 @@ spec:
                     'properties.security.protocol' = 'SSL',
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
                     'properties.ssl.truststore.type' = 'PEM',
-                    'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
-                    'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
+                    'properties.ssl.keystore.certificate.chain' = '{{secret:flink/my-user/user.crt}}',
+                    'properties.ssl.keystore.key' = '{{secret:flink/my-user/user.key}}',
+                    'properties.ssl.keystore.type' = 'PEM',
                     'properties.group.id' = 'sales-record-group',
                     'value.format' = 'avro-confluent',
                     'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6',
@@ -72,8 +64,9 @@ spec:
                     'properties.security.protocol' = 'SSL',
                     'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
                     'properties.ssl.truststore.type' = 'PEM',
-                    'properties.ssl.keystore.location' = '/opt/my-user/user.p12',
-                    'properties.ssl.keystore.password' = '{{secret:flink/my-user/user.password}}',
+                    'properties.ssl.keystore.certificate.chain' = '{{secret:flink/my-user/user.crt}}',
+                    'properties.ssl.keystore.key' = '{{secret:flink/my-user/user.key}}',
+                    'properties.ssl.keystore.type' = 'PEM',
                     'properties.client.id' = 'sql-secure-client', 
                     'properties.transaction.timeout.ms' = '800000', 
                     'key.format' = 'csv', 
