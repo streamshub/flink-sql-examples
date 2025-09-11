@@ -123,8 +123,6 @@ You can verify that the different authentication methods, shown below, are worki
     The job manager pod will have the name format `standalone-etl-secure-<alphanumeric>`, your `kubectl` should tab-complete the name.
     If it doesn't then you can find the job manager name by running `kubectl -n flink get pods`.
 
-#### Using REST API
-
 - Make an API request to the [JobManager REST API](https://nightlies.apache.org/flink/flink-docs-release-2.1/docs/ops/rest_api/) and parse the JSON response with [`jq`](https://jqlang.org/) like so:
 
     ```shell
@@ -151,16 +149,6 @@ You can verify that the different authentication methods, shown below, are worki
     ```
 
     > Note: If the result is different, you might've made the API request too quickly. Try again in a few seconds.
-
-#### Using Web UI
-
-- Navigate to `http://localhost:8081` to view the Flink dashboard:
-
-    ![jobs](./assets/jobs.png)
-
-- Click on the `standalone-etl-secure` job and verify it has sent `10` records to a topic.
-
-    ![job](./assets/job.png)
 
 ### TLS
 
