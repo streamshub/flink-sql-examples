@@ -47,13 +47,23 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
-      - name: Test Build Image
+      - name: Generate Currency Converter Dockerfile
+        working-directory: tutorials/currency-converter
+        run: mvn -B docker:build -Ddocker.buildArchiveOnly # Skip building image, just create Dockerfile
+      - name: Test Build Data Generator Image
         uses: docker/build-push-action@v6
         with:
           context: tutorials/data-generator/
           platforms: linux/amd64,linux/arm64
           push: false
           file: tutorials/data-generator/Dockerfile
+      - name: Test Build Currency Converter Image
+        uses: docker/build-push-action@v6
+        with:
+          context: tutorials/currency-converter/target/docker/flink-sql-runner-with-flink-udf-currency-converter/build/
+          platforms: linux/amd64,linux/arm64
+          push: false
+          file: tutorials/currency-converter/target/docker/flink-sql-runner-with-flink-udf-currency-converter/build/Dockerfile
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
