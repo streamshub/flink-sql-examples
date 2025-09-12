@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: standalone-etl-udf
 spec:
-  image: quay.io/streamshub/flink-sql-runner-with-flink-udf-currency-converter:0.1.0
+  image: quay.io/streamshub/flink-sql-runner-with-flink-udf-currency-converter:main
   flinkVersion: v2_0
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "1"
