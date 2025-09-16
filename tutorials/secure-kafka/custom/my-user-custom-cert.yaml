@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-user-custom-cert
+spec:
+  secretName: my-user-custom-cert
+  issuerRef:
+    name: my-selfsigned-ca-issuer
+    kind: Issuer
+  commonName: my-user
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048

@@ -1,0 +1,33 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  name: my-user
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls-external
+  # spec.authorization.acls is required for topic access
+  # if simple Kafka spec.kafka.authorization was specified
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: flink.sales.records
+        operations:
+          - Describe
+          - Read
+      - resource:
+          type: topic
+          name: flink.custom.auth.sales.records
+        operations:
+          - Describe
+          - Create
+          - Write
+          - Read
+      - resource:
+          type: group
+          name: sales-record-group
+        operations:
+          - Read

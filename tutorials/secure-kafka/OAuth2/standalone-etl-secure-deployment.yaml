@@ -1,0 +1,119 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: standalone-etl-secure
+spec:
+  image: quay.io/streamshub/flink-sql-runner:0.3.0
+  flinkVersion: v2_0
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "1"
+  serviceAccount: flink
+  podTemplate:
+    kind: Pod
+    spec:
+      volumes:
+        - name: my-cluster-cluster-ca-cert
+          secret:
+            secretName: my-cluster-cluster-ca-cert
+            items:
+              - key: ca.crt
+                path: ca.crt
+        - name: keycloak-cert
+          secret:
+            secretName: keycloak-cert
+            items:
+              - key: ca.crt
+                path: ca.crt
+      containers:
+        - name: flink-main-container
+          volumeMounts:
+            - name: my-cluster-cluster-ca-cert
+              mountPath: "/opt/my-cluster-cluster-ca-cert"
+              readOnly: true
+            - name: keycloak-cert
+              mountPath: "/opt/keycloak-ca-cert"
+              readOnly: true
+          env:
+            - name: SQL_STATEMENTS
+              value: |
+                  CREATE TABLE SalesRecordTable (
+                    invoice_id STRING,
+                    user_id STRING,
+                    product_id STRING,
+                    quantity STRING,
+                    unit_cost STRING,
+                    `purchase_time` TIMESTAMP(3) METADATA FROM 'timestamp',
+                    WATERMARK FOR purchase_time AS purchase_time - INTERVAL '1' SECOND
+                  ) WITH (
+                    'connector' = 'kafka',
+                    'topic' = 'flink.sales.records',
+                    'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9094',
+                    'properties.security.protocol' = 'SASL_SSL',
+                    'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
+                    'properties.ssl.truststore.type' = 'PEM',
+                    'properties.sasl.mechanism' = 'OAUTHBEARER',
+                    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule
+                      required
+                        oauth.ssl.truststore.location="/opt/keycloak-ca-cert/ca.crt"
+                        oauth.ssl.truststore.type="PEM"
+                        oauth.client.id="kafka"
+                        oauth.client.secret="{{secret:flink/keycloak-kafka-client-secret/secret}}"
+                        oauth.token.endpoint.uri="https://keycloak.flink.svc:8443/realms/kafka-authz/protocol/openid-connect/token"
+                      \;',
+                    'properties.sasl.login.callback.handler.class' = 'io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler',
+                    'properties.group.id' = 'sales-record-group',
+                    'value.format' = 'avro-confluent',
+                    'value.avro-confluent.url' = 'http://apicurio-registry-service.flink.svc:8080/apis/ccompat/v6',
+                    'scan.startup.mode' = 'latest-offset'
+                  );
+
+                  CREATE TABLE OAuth2AuthSalesRecordTable (
+                    invoice_id STRING, 
+                    user_id STRING, 
+                    product_id STRING, 
+                    quantity STRING, 
+                    PRIMARY KEY (`user_id`) NOT ENFORCED
+                  ) WITH (
+                    'connector' = 'upsert-kafka', 
+                    'topic' = 'flink.oauth2.auth.sales.records', 
+                    'properties.bootstrap.servers' = 'my-cluster-kafka-bootstrap.flink.svc:9094', 
+                    'properties.security.protocol' = 'SASL_SSL',
+                    'properties.ssl.truststore.location' = '/opt/my-cluster-cluster-ca-cert/ca.crt',
+                    'properties.ssl.truststore.type' = 'PEM',
+                    'properties.sasl.mechanism' = 'OAUTHBEARER',
+                    'properties.sasl.jaas.config' = 'org.apache.flink.kafka.shaded.org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule
+                      required
+                        oauth.ssl.truststore.location="/opt/keycloak-ca-cert/ca.crt"
+                        oauth.ssl.truststore.type="PEM"
+                        oauth.client.id="kafka"
+                        oauth.client.secret="{{secret:flink/keycloak-kafka-client-secret/secret}}"
+                        oauth.token.endpoint.uri="https://keycloak.flink.svc:8443/realms/kafka-authz/protocol/openid-connect/token"
+                      \;',
+                    'properties.sasl.login.callback.handler.class' = 'io.strimzi.kafka.oauth.client.JaasClientOauthLoginCallbackHandler',
+                    'properties.client.id' = 'sql-secure-client', 
+                    'properties.transaction.timeout.ms' = '800000', 
+                    'key.format' = 'csv', 
+                    'value.format' = 'csv', 
+                    'value.fields-include' = 'ALL'
+                  );
+
+                  INSERT INTO OAuth2AuthSalesRecordTable 
+                    SELECT 
+                      invoice_id, 
+                      user_id, 
+                      product_id, 
+                      quantity
+                    FROM SalesRecordTable
+                    LIMIT 10;
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/streamshub/flink-sql-runner.jar
+    parallelism: 1
+    upgradeMode: stateless

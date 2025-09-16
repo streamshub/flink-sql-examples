@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: keycloak-cert
+spec:
+  secretName: keycloak-cert
+  issuerRef:
+    name: my-selfsigned-ca-issuer
+    kind: Issuer
+  dnsNames:
+    - keycloak.flink.svc.cluster.local
+    - keycloak.flink.svc
