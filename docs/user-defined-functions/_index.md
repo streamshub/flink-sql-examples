@@ -195,7 +195,7 @@ public class CurrencyConverter extends ScalarFunction {
 ```
 
 Flink's [Automatic Type Inference](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference) will use reflection to derive SQL data types for the argument and result of our UDF. 
-If you want to override this behaviour, you can [explicitly specify the types]((https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference)), but in this case we will keep it simple and let Flink decide for us.
+If you want to override this behaviour, you can [explicitly specify the types](https://nightlies.apache.org/flink/flink-docs-release-2.0/docs/dev/table/functions/udfs/#automatic-type-inference), but in this case we will keep it simple and let Flink decide for us.
 
 ### Implementing the logic
 
