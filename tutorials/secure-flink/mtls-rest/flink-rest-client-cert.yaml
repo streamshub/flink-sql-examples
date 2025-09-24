@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: flink-rest-client-cert-password
+type: Opaque
+stringData:
+  password: "l83cJn9ervq4"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: flink-rest-client-cert
+spec:
+  secretName: flink-rest-client-cert
+  issuerRef:
+    name: my-selfsigned-ca-issuer
+    kind: Issuer
+  dnsNames:
+    - 'standalone-etl-secure-rest-client.flink.svc.cluster.local'
+    - 'standalone-etl-secure-rest-client.flink.svc'
+  commonName: FlinkDeployment
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        name: flink-rest-client-cert-password
+        key: password

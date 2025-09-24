@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: standalone-etl-secure-rest-mtls-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-secret: flink/flink-rest-proxy-client-cert
+spec:
+  tls:
+    - hosts:
+        - standalone-etl-secure-rest-mtls-ingress.example
+      secretName: flink-rest-proxy-server-cert
+  rules:
+    - host: standalone-etl-secure-rest-mtls-ingress.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: standalone-etl-secure-rest
+                port:
+                  number: 8081

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: standalone-etl-secure-rest-client
+spec:
+  containers:
+    - name: curl
+      image: quay.io/curl/curl:8.15.0
+      # Wait forever so a user can exec into the container and run their own commands
+      command: [ "/bin/sh", "-c", "--" ]
+      args: [ "while true; do sleep 5; done;" ]
+      volumeMounts:
+        - name: flink-rest-server-cert
+          mountPath: "/opt/flink-rest-server-cert"
+          readOnly: true
+        - name: flink-rest-client-cert
+          mountPath: "/opt/flink-rest-client-cert"
+          readOnly: true
+  volumes:
+    - name: flink-rest-server-cert
+      secret:
+        secretName: flink-rest-server-cert
+        items:
+          - key: ca.crt
+            path: ca.crt
+    - name: flink-rest-client-cert
+      secret:
+        secretName: flink-rest-client-cert
+        items:
+          - key: tls.crt
+            path: tls.crt
+          - key: tls.key
+            path: tls.key
